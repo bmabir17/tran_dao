@@ -88,7 +88,8 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   void _onCameraMove(CameraPosition position) {
   _lastMapPosition = position.target;
   }
-  void _onAddMarkerButtonPressed() {
+  void _onAddMarkerButtonPressed(orgName,quantity,packageType) {
+    quantity=quantity.toString();
     setState(() {
       _markers.add(
         Marker(
@@ -96,10 +97,10 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
           markerId: MarkerId(_lastMapPosition.toString()),
           position: _lastMapPosition,
           infoWindow: InfoWindow(
-            title: 'Really cool place',
-            snippet: '5 Star Rating',
+            title: 'Your/Organization Name: $orgName',
+            snippet: '$packageType package with Quantity: $quantity ',
           ),
-          icon: BitmapDescriptor.defaultMarker,
+          icon: BitmapDescriptor.defaultMarkerWithHue(200),
         )
       );
     });
@@ -107,6 +108,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   }
   _showQuantityModal(context){
     final _formKey = GlobalKey<FormState>();
+    int _quantity;
     showModalBottomSheet(context: context, builder: (context)=> Container(
                           color: Colors.red[50],
                           height: 180,
@@ -138,6 +140,20 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                                             }
                                             return null;
                                           },
+                                          onChanged: (value){
+                                            // debugPrint("value: $value");
+                                            setState(() {
+                                              
+                                              _quantity = int.parse(value);
+                                            });
+                                          },
+                                          // onSaved: (value){
+                                          //   debugPrint("value: $value");
+                                          //   setState(() {
+                                              
+                                          //     _quantity = int.parse(value);
+                                          //   });
+                                          // },
                                         ),
                                       ),
                                     ),
@@ -161,6 +177,10 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                                             // the form is invalid.
                                             if (_formKey.currentState.validate()) {
                                               // Process data.
+                                              Navigator.pop(context);
+                                              debugPrint("_quantity: $_quantity");
+                                              _onAddMarkerButtonPressed("Abir",_quantity,"Weekly");
+
                                             }
                                           },
                                           // child: Text('Submit'),
