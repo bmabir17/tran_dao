@@ -43,7 +43,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Tran dao, Relief Distribution Map"),
+          title: Text("ত্রান দাও : Relief Distribution Map"),
           backgroundColor: Colors.green[700],
         ),
         body: Stack(
