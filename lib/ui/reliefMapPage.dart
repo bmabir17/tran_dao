@@ -58,7 +58,11 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
               ),
               markers: _markers,
               onCameraMove: _onCameraMove,
-            ):Text("Loading Location"),
+            ):
+            // Text("Loading Location"),
+            Center(
+              child: CircularProgressIndicator(),
+            ),
             // Ref: https://api.flutter.dev/flutter/material/FloatingActionButton-class.html#material.FloatingActionButton.2
             Padding(
               padding: const EdgeInsets.all(20.0),
@@ -77,7 +81,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                 ),
               ),
             ),
-            Padding(
+            _currentPosition != null ? Padding(
               padding: const EdgeInsets.all(0),
               child: Align(
                 alignment: Alignment.center,
@@ -87,6 +91,8 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                   size: 50.0,
                 )
               ),
+            ):Center(
+              child:Text("Loading Map"),
             ),
           ],
         ),
