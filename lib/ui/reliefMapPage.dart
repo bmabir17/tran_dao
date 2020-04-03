@@ -77,6 +77,17 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(0),
+              child: Align(
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.location_on,
+                  color: Colors.green,
+                  size: 50.0,
+                )
+              ),
+            ),
           ],
         ),
         
@@ -100,7 +111,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
             title: 'Your/Organization Name: $orgName',
             snippet: '$packageType package with Quantity: $quantity ',
           ),
-          icon: BitmapDescriptor.defaultMarkerWithHue(200),
+          icon: BitmapDescriptor.defaultMarkerWithHue(0),
         )
       );
     });
