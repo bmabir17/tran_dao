@@ -1,4 +1,5 @@
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -16,7 +17,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
 
   GoogleMapController mapController;
   static const LatLng _center = const LatLng(23.7805733,90.2792399);
-
+  
   final Set<Marker> _markers = {
                   //Marker for current Location
                   // Marker(
@@ -28,12 +29,14 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
               };
   LatLng _lastMapPosition = _center;
   void _onMapCreated(GoogleMapController controller) {
+    
     mapController = controller;
   }
   @override
   void initState() {
-    super.initState();
     _getCurrentLocation();
+    super.initState();
+    
   }
 
   @override
@@ -45,17 +48,17 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
         ),
         body: Stack(
           children:<Widget>[
-            GoogleMap(
+            _currentPosition != null ? GoogleMap(
               onMapCreated: _onMapCreated,
               myLocationEnabled: true,
               myLocationButtonEnabled: true,
               initialCameraPosition: CameraPosition(
-                target: LatLng(_currentPosition.latitude,_currentPosition.longitude),
+                target:  LatLng(_currentPosition.latitude,_currentPosition.longitude) ,
                 zoom: 11.0,
               ),
               markers: _markers,
               onCameraMove: _onCameraMove,
-            ),
+            ):Text("Loading Location"),
             // Ref: https://api.flutter.dev/flutter/material/FloatingActionButton-class.html#material.FloatingActionButton.2
             Padding(
               padding: const EdgeInsets.all(20.0),
@@ -105,44 +108,77 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   _showQuantityModal(context){
     final _formKey = GlobalKey<FormState>();
     showModalBottomSheet(context: context, builder: (context)=> Container(
-                          color: Colors.red,
-                          child:Form(
-                            key: _formKey,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                TextFormField(
-                                  decoration: const InputDecoration(
-                                    hintText: 'Enter your email',
-                                  ),
-                                  validator: (value) {
-                                    if (value.isEmpty) {
-                                      return 'Please enter some text';
-                                    }
-                                    return null;
-                                  },
+                          color: Colors.red[50],
+                          height: 180,
+                          child:Stack(
+                            children: <Widget>[
+                              Form(
+                                key: _formKey,
+                                child: Column(
+                                  // crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      
+                                      child:Align(
+                                        alignment: Alignment.topCenter,
+                                        child: TextFormField(
+                                        decoration: const InputDecoration(
+                                          hintText: 'Enter your relief Quantity',
+                                          icon: Icon(Icons.add_box),
+                                          
+                                          ),
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: <TextInputFormatter>[
+                                              WhitelistingTextInputFormatter.digitsOnly
+                                          ],
+                                          validator: (value) {
+                                            if (value.isEmpty) {
+                                              return 'Please enter some text';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 25.0,horizontal: 140.0),
+                                      child:Align(
+                                        alignment: Alignment.center,
+                                        child: RaisedButton.icon(
+                                          icon: Icon(Icons.save, color:Colors.white,),
+                                          textColor: Colors.white,
+                                          splashColor: Colors.red,
+                                          color: Colors.green,
+                                          label: Text('Submit',style: TextStyle(color: Colors.white),),
+                                          shape: RoundedRectangleBorder(
+                                            
+                                            borderRadius: new BorderRadius.circular(10.0),
+                                            side: BorderSide(color: Colors.red[50])
+                                          ),
+                                          onPressed: () {
+                                            // Validate will return true if the form is valid, or false if
+                                            // the form is invalid.
+                                            if (_formKey.currentState.validate()) {
+                                              // Process data.
+                                            }
+                                          },
+                                          // child: Text('Submit'),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                                  child: RaisedButton(
-                                    onPressed: () {
-                                      // Validate will return true if the form is valid, or false if
-                                      // the form is invalid.
-                                      if (_formKey.currentState.validate()) {
-                                        // Process data.
-                                      }
-                                    },
-                                    child: Text('Submit'),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
+                          
+                          
                         ));
   }
 
   // Reference https://alligator.io/flutter/geolocator-plugin/
-  _getCurrentLocation() {
+   _getCurrentLocation () {
     final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
 
     geolocator
