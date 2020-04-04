@@ -21,6 +21,9 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   
   final Set<Marker> _markers = {};
   LatLng _lastMapPosition = _center;
+
+  final databaseReference = Firestore.instance;
+
   void _onMapCreated(GoogleMapController controller) {
     
     mapController = controller;
@@ -28,6 +31,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   @override
   void initState() {
     _getCurrentLocation();
+    getReliefData();
     super.initState();
     
   }
@@ -92,14 +96,18 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   void _onCameraMove(CameraPosition position) {
     _lastMapPosition = position.target;
   }
-  void _onAddMarkerButtonPressed(orgName,quantity,packageType) {
+  // ------------------- View Functions ------------------------
+  void _addMarker(orgName,quantity,packageType,location) {
     quantity=quantity.toString();
+    if(location == null){
+      location=_lastMapPosition;
+    }
     setState(() {
       _markers.add(
         Marker(
           // This marker id can be anything that uniquely identifies each marker.
-          markerId: MarkerId(_lastMapPosition.toString()),
-          position: _lastMapPosition,
+          markerId: MarkerId(location.toString()),
+          position: location,
           infoWindow: InfoWindow(
             title: 'Your/Organization Name: $orgName',
             snippet: '$packageType package with Quantity: $quantity ',
@@ -168,9 +176,10 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                           // the form is invalid.
                           if (_formKey.currentState.validate()) {
                             // Process data.
+                            createReliefRecord("Abir",_quantity,"Weekly");
                             Navigator.pop(context);
                             debugPrint("_quantity: $_quantity");
-                            _onAddMarkerButtonPressed("Abir",_quantity,"Weekly");
+                            _addMarker("Abir",_quantity,"Weekly",null);
                           }
                         },
                       ),
@@ -184,7 +193,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
       )
     );
   }
-
+  // ------------------ I/O functions ------------
   // Reference https://alligator.io/flutter/geolocator-plugin/
    _getCurrentLocation () {
     final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
@@ -198,4 +207,41 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
       print(e);
     });
   }
+  // Ref https://medium.com/@atul.sharma_94062/how-to-use-cloud-firestore-with-flutter-e6f9e8821b27
+  void createReliefRecord(name,quantity,packageType) async {
+    // await databaseReference.collection("relief")
+    //     .document("reliefPlaced")
+    //     .setData({
+    //       'name': 'sakib',
+    //       'quantity': 20
+    //     });
+    DocumentReference ref = await databaseReference.collection("relief")
+        .add({
+          'name': name,
+          'quantity': quantity,
+          'location': GeoPoint(_lastMapPosition.latitude,_lastMapPosition.longitude),
+          'package_type':packageType,
+          'time':Timestamp.now()
+
+        });
+    print(ref.documentID);
+  }
+
+  void getReliefData() {
+    databaseReference
+        .collection("relief")
+        .getDocuments()
+        .then((QuerySnapshot snapshot) {
+      snapshot.documents.forEach((f) {
+        print('${f.data}}');
+        //  Ref https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
+        GeoPoint pos = f.data['location'];
+        LatLng latLng = new LatLng(pos.latitude, pos.longitude);
+        print(latLng);
+        _addMarker(f.data['name'],f.data['quantity'],f.data['package_type'],latLng);
+
+      });
+    });
+  }
 }
+
