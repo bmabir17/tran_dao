@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "665789288012",
+    "firebase_url": "https://tran-dao.firebaseio.com",
+    "project_id": "tran-dao",
+    "storage_bucket": "tran-dao.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:665789288012:android:bcd502d257d56632a52ee9",
+        "android_client_info": {
+          "package_name": "com.bmabir17.tran_dao"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "665789288012-6lk6m26rfhm9b3kviga0ur5pe3cc7rso.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA21jcZZctAZWek2TRVJKttvtRV70tSf5w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "665789288012-6lk6m26rfhm9b3kviga0ur5pe3cc7rso.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
