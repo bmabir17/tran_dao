@@ -178,7 +178,6 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                             // Process data.
                             createReliefRecord("Abir",_quantity,"Weekly");
                             Navigator.pop(context);
-                            debugPrint("_quantity: $_quantity");
                             _addMarker("Abir",_quantity,"Weekly",null);
                           }
                         },
@@ -209,12 +208,6 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   }
   // Ref https://medium.com/@atul.sharma_94062/how-to-use-cloud-firestore-with-flutter-e6f9e8821b27
   void createReliefRecord(name,quantity,packageType) async {
-    // await databaseReference.collection("relief")
-    //     .document("reliefPlaced")
-    //     .setData({
-    //       'name': 'sakib',
-    //       'quantity': 20
-    //     });
     DocumentReference ref = await databaseReference.collection("relief")
         .add({
           'name': name,
@@ -224,7 +217,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
           'time':Timestamp.now()
 
         });
-    print(ref.documentID);
+
   }
 
   void getReliefData() {
@@ -233,11 +226,9 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
         .getDocuments()
         .then((QuerySnapshot snapshot) {
       snapshot.documents.forEach((f) {
-        print('${f.data}}');
         //  Ref https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
         GeoPoint pos = f.data['location'];
         LatLng latLng = new LatLng(pos.latitude, pos.longitude);
-        print(latLng);
         _addMarker(f.data['name'],f.data['quantity'],f.data['package_type'],latLng);
 
       });
