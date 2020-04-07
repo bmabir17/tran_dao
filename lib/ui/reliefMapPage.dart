@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_flutter_heatmap/google_maps_flutter_heatmap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReliefMapPage extends StatefulWidget{
@@ -20,6 +20,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   static const LatLng _center = const LatLng(23.7805733,90.2792399);
   
   final Set<Marker> _markers = {};
+  final Set<Heatmap> _heatmaps = {};
   LatLng _lastMapPosition = _center;
 
   final databaseReference = Firestore.instance;
@@ -54,6 +55,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                 zoom: 11.0,
               ),
               markers: _markers,
+              heatmaps: _heatmaps,
               onCameraMove: _onCameraMove,
             ):
             Center(
@@ -117,6 +119,35 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
       );
     });
   }
+  // https://github.com/bmabir17/google_maps_flutter_heatmap/blob/master/example/lib/place_heatmap.dart
+  void _addHeatmap(quantity,location){
+    if(location == null){
+      location=_lastMapPosition;
+    }
+    int rad = 10;
+    if (quantity>200){
+      if(quantity<10000){
+        rad = 10 + (quantity/ 200).round();
+      }
+      rad = 50;  
+      
+    }
+    
+    
+    print("heatmaps:$_heatmaps");
+    setState(() {
+      _heatmaps.add(
+        Heatmap(
+          heatmapId: HeatmapId(location.toString()),
+          points: _createPoints(location,quantity),
+          radius: rad,
+          visible: true,
+          gradient:  HeatmapGradient(colors: <Color>[Colors.green, Colors.red], startPoints: <double>[0.2, 0.8])
+          )
+      );
+    });
+
+  }
   _showQuantityModal(context){
     final _formKey = GlobalKey<FormState>();
     int _quantity;
@@ -179,6 +210,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                             createReliefRecord("Abir",_quantity,"Weekly");
                             Navigator.pop(context);
                             _addMarker("Abir",_quantity,"Weekly",null);
+                            _addHeatmap(_quantity,null);
                           }
                         },
                       ),
@@ -206,7 +238,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
       print(e);
     });
   }
-  // Ref https://medium.com/@atul.sharma_94062/how-to-use-cloud-firestore-with-flutter-e6f9e8821b27
+  // reference https://medium.com/@atul.sharma_94062/how-to-use-cloud-firestore-with-flutter-e6f9e8821b27
   void createReliefRecord(name,quantity,packageType) async {
     DocumentReference ref = await databaseReference.collection("relief")
         .add({
@@ -230,9 +262,21 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
         GeoPoint pos = f.data['location'];
         LatLng latLng = new LatLng(pos.latitude, pos.longitude);
         _addMarker(f.data['name'],f.data['quantity'],f.data['package_type'],latLng);
+        _addHeatmap(f.data['quantity'],latLng);
 
       });
     });
+  }
+
+  //heatmap generation helper functions
+  List<WeightedLatLng> _createPoints(LatLng location,quantity) {
+    final List<WeightedLatLng> points = <WeightedLatLng>[];
+    points.add(_createWeightedLatLng(location.latitude,location.longitude, 1));
+    return points;
+  }
+
+  WeightedLatLng _createWeightedLatLng(double lat, double lng, int weight) {
+    return WeightedLatLng(point: LatLng(lat, lng), intensity: weight);
   }
 }
 
