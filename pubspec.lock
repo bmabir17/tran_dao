@@ -125,13 +125,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_plugin_android_lifecycle:
-    dependency: transitive
-    description:
-      name: flutter_plugin_android_lifecycle
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.6"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -156,13 +149,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.4"
-  google_maps_flutter:
+  google_maps_flutter_heatmap:
     dependency: "direct main"
     description:
-      name: google_maps_flutter
+      name: google_maps_flutter_heatmap
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.25+3"
+    version: "0.1.1+1"
   http:
     dependency: transitive
     description:
