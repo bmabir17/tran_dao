@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import "package:tran_dao/ui/reliefMapPage.dart";
-
+import 'package:splashscreen/splashscreen.dart';
 
 class TranDao extends StatefulWidget {
   @override
@@ -12,7 +12,7 @@ class _TranDaoState extends State<TranDao> {
   Widget build(BuildContext context) {
     dynamic _initPage;
     
-    _initPage=ReliefMapPage();
+    _initPage=MySplashScreen();
 
     return MaterialApp(
       home: _initPage,
@@ -31,4 +31,30 @@ class _TranDaoState extends State<TranDao> {
       },
     );
   }
+}
+// https://pub.dev/packages/splashscreen#-readme-tab-
+class MySplashScreen extends StatefulWidget{
+  
+  _MySplashScreenState createState() => new _MySplashScreenState();
+}
+  
+class _MySplashScreenState extends State<MySplashScreen> {
+  Widget build(BuildContext context){
+    return new SplashScreen(
+      seconds: 5,
+      navigateAfterSeconds: new ReliefMapPage(),
+      title: new Text('ত্রান দাও',
+      style: new TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 35.0,
+      ),),
+      backgroundColor: Colors.white,
+      styleTextUnderTheLoader: new TextStyle(),
+      photoSize: 100.0,
+      onClick: ()=>print("Flutter BD"),
+      loaderColor: Colors.green
+    );
+
+  }
+
 }
