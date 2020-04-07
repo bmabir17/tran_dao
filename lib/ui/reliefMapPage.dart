@@ -271,13 +271,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   //heatmap generation helper functions
   List<WeightedLatLng> _createPoints(LatLng location,quantity) {
     final List<WeightedLatLng> points = <WeightedLatLng>[];
-    // final double offset = quantity.ceilToDouble();
-    // points.add(_createWeightedLatLng(51.4816 + offset, -3.1791, 1));
-    // points.add(_createWeightedLatLng(53.0430 + offset, -2.9925, 1));
-    // points.add(_createWeightedLatLng(53.1396 + offset, -4.2739, 1));
-    // points.add(_createWeightedLatLng(52.4153 + offset, -4.0829, 1));
     points.add(_createWeightedLatLng(location.latitude,location.longitude, 1));
-    // points.add(_createWeightedLatLng(location.latitude - quantity,location.longitude, 1));
     return points;
   }
 
