@@ -40,7 +40,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
       _getCurrentLocation();
       print("current location not passed");
     }
-    getReliefData();
+    getInfectedData();
     super.initState();
     
   }
@@ -86,6 +86,20 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child:FloatingActionButton.extended(
+                onPressed: () {
+                  // _showQuantityModal(context);
+                },
+                label: Text('Update data'),
+                icon: Icon(Icons.edit),
+                backgroundColor: Colors.yellow[800],
+              ),
+            ),
+          ),
           _currentPosition != null ? Padding(
             padding: const EdgeInsets.all(0),
             child: Align(
@@ -109,8 +123,11 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
     _lastMapPosition = position.target;
   }
   // ------------------- View Functions ------------------------
-  void _addMarker(orgName,quantity,packageType,location) {
+  void _addMarker(orgName,quantity,dataType,location,Timestamp timestamp) {
     quantity=quantity.toString();
+    var date = timestamp.toDate();
+    var dateString = date.toString();
+    // var date = new DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
     if(location == null){
       location=_lastMapPosition;
     }
@@ -121,8 +138,8 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
           markerId: MarkerId(location.toString()),
           position: location,
           infoWindow: InfoWindow(
-            title: 'Data Source: $orgName, Entry :$packageType ',
-            snippet: ' Number of infected: $quantity ,Date: ',
+            title: 'Data Source: $orgName, Entry: $dataType ',
+            snippet: ' Number of infected: $quantity ,Date: $dateString',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(20),
         )
@@ -217,9 +234,9 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
                           // the form is invalid.
                           if (_formKey.currentState.validate()) {
                             // Process data.
-                            createReliefRecord("IEDCR",_quantity,"manual");
+                            createInfectedRecord("IEDCR",_quantity,"manual");
                             Navigator.pop(context);
-                            _addMarker("IEDCR",_quantity,"manual",null);
+                            _addMarker("IEDCR",_quantity,"manual",null,Timestamp.now());
                             _addHeatmap(_quantity,null);
                           }
                         },
@@ -249,29 +266,29 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
     });
   }
   // reference https://medium.com/@atul.sharma_94062/how-to-use-cloud-firestore-with-flutter-e6f9e8821b27
-  void createReliefRecord(name,quantity,packageType) async {
-    DocumentReference ref = await databaseReference.collection("relief")
+  void createInfectedRecord(name,quantity,dataType) async {
+    DocumentReference ref = await databaseReference.collection("infected")
         .add({
           'name': name,
           'quantity': quantity,
           'location': GeoPoint(_lastMapPosition.latitude,_lastMapPosition.longitude),
-          'package_type':packageType,
+          'data_type':dataType,
           'time':Timestamp.now()
 
         });
 
   }
 
-  void getReliefData() {
+  void getInfectedData() {
     databaseReference
-        .collection("relief")
+        .collection("infected")
         .getDocuments()
         .then((QuerySnapshot snapshot) {
       snapshot.documents.forEach((f) {
         //  Ref https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
         GeoPoint pos = f.data['location'];
         LatLng latLng = new LatLng(pos.latitude, pos.longitude);
-        _addMarker(f.data['name'],f.data['quantity'],f.data['package_type'],latLng);
+        _addMarker(f.data['name'],f.data['quantity'],f.data['data_type'],latLng,f.data['time']);
         _addHeatmap(f.data['quantity'],latLng);
 
       });
