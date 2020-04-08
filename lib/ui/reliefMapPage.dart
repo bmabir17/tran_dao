@@ -7,15 +7,16 @@ import 'package:google_maps_flutter_heatmap/google_maps_flutter_heatmap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReliefMapPage extends StatefulWidget{
-  ReliefMapPage();
+  final Position currentPosition;
+  ReliefMapPage({this.currentPosition});
 
   @override
-  _ReliefMapPageState createState() => _ReliefMapPageState();
+  _ReliefMapPageState createState() => _ReliefMapPageState(currentPosition : currentPosition);
 }
 
 class _ReliefMapPageState extends State<ReliefMapPage>{
   Position _currentPosition;
-
+  var currentPosition;
   GoogleMapController mapController;
   static const LatLng _center = const LatLng(23.7805733,90.2792399);
   
@@ -25,13 +26,20 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
 
   final databaseReference = Firestore.instance;
 
+  
+
   void _onMapCreated(GoogleMapController controller) {
     
     mapController = controller;
   }
+  _ReliefMapPageState({this.currentPosition});
   @override
   void initState() {
-    _getCurrentLocation();
+    _currentPosition = currentPosition;
+    if(currentPosition == null){
+      _getCurrentLocation();
+      print("current location not passed");
+    }
     getReliefData();
     super.initState();
     
@@ -39,58 +47,60 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("ত্রান দাও : Relief Distribution Map"),
-          backgroundColor: Colors.green[700],
-        ),
-        body: Stack(
-          children:<Widget>[
-            _currentPosition != null ? GoogleMap(
-              onMapCreated: _onMapCreated,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-              initialCameraPosition: CameraPosition(
-                target:  LatLng(_currentPosition.latitude,_currentPosition.longitude),
-                zoom: 11.0,
-              ),
-              markers: _markers,
-              heatmaps: _heatmaps,
-              onCameraMove: _onCameraMove,
-            ):
-            Center(
-              child: CircularProgressIndicator(),
+    return 
+      // Scaffold(
+      //   appBar: AppBar(
+      //     title: Text("ত্রান দাও : Relief Distribution Map"),
+      //     backgroundColor: Colors.green[700],
+      //   ),
+      //   body: 
+      Stack(
+        children:<Widget>[
+          _currentPosition != null ? GoogleMap(
+            onMapCreated: _onMapCreated,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: true,
+            initialCameraPosition: CameraPosition(
+              target:  LatLng(_currentPosition.latitude,_currentPosition.longitude),
+              zoom: 11.0,
             ),
-            // Ref: https://api.flutter.dev/flutter/material/FloatingActionButton-class.html#material.FloatingActionButton.2
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child:FloatingActionButton.extended(
-                  onPressed: () {
-                    _showQuantityModal(context);
-                  },
-                  label: Text('New Relief'),
-                  icon: Icon(Icons.add),
-                  backgroundColor: Colors.green,
-                ),
+            markers: _markers,
+            heatmaps: _heatmaps,
+            onCameraMove: _onCameraMove,
+          ):
+          Center(
+            child: CircularProgressIndicator(),
+          ),
+          // Ref: https://api.flutter.dev/flutter/material/FloatingActionButton-class.html#material.FloatingActionButton.2
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child:FloatingActionButton.extended(
+                onPressed: () {
+                  _showQuantityModal(context);
+                },
+                label: Text('New Relief'),
+                icon: Icon(Icons.add),
+                backgroundColor: Colors.green[800],
               ),
             ),
-            _currentPosition != null ? Padding(
-              padding: const EdgeInsets.all(0),
-              child: Align(
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.location_on,
-                  color: Colors.green,
-                  size: 50.0,
-                )
-              ),
-            ):Center(
-              child:Text("Loading Map"),
+          ),
+          _currentPosition != null ? Padding(
+            padding: const EdgeInsets.all(0),
+            child: Align(
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 50.0,
+              )
             ),
-          ],
-        ), 
+          ):Center(
+            child:Text("Loading Map"),
+          ),
+        ],
+      // ), 
       );
   }
 
@@ -134,7 +144,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
     }
     
     
-    print("heatmaps:$_heatmaps");
+    // print("heatmaps:$_heatmaps");
     setState(() {
       _heatmaps.add(
         Heatmap(
@@ -196,7 +206,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                         icon: Icon(Icons.save, color:Colors.white),
                         textColor: Colors.white,
                         splashColor: Colors.red,
-                        color: Colors.green,
+                        color: Colors.green[800],
                         label: Text('Submit',style: TextStyle(color: Colors.white)),
                         shape: RoundedRectangleBorder( 
                           borderRadius: new BorderRadius.circular(10.0),
