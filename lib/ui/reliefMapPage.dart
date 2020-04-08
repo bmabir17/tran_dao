@@ -26,7 +26,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
 
   final databaseReference = Firestore.instance;
 
-  
+
 
   void _onMapCreated(GoogleMapController controller) {
     
@@ -57,7 +57,10 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
       Stack(
         children:<Widget>[
           _currentPosition != null ? GoogleMap(
-            onMapCreated: _onMapCreated,
+            onMapCreated: (controller){
+              _onMapCreated(controller);
+              // _showDialog();
+            },
             myLocationEnabled: true,
             myLocationButtonEnabled: true,
             initialCameraPosition: CameraPosition(
@@ -220,7 +223,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                             createReliefRecord("Abir",_quantity,"Weekly");
                             Navigator.pop(context);
                             _addMarker("Abir",_quantity,"Weekly",null);
-                            _addHeatmap(_quantity,null);
+                            _addHeatmap(_quantity,null);                      
                           }
                         },
                       ),
@@ -234,6 +237,29 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
       )
     );
   }
+  // https://medium.com/@nils.backe/flutter-alert-dialogs-9b0bb9b01d28
+  // void _showDialog() {
+  //   // flutter defined function
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       // return object of type Dialog
+  //       return AlertDialog(
+  //         title: new Text("Data not loaded"),
+  //         content: new Text("Could not get relief data from server"),
+  //         actions: <Widget>[
+  //           // usually buttons at the bottom of the dialog
+  //           new FlatButton(
+  //             child: new Text("ok"),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
   // ------------------ I/O functions ------------
   // Reference https://alligator.io/flutter/geolocator-plugin/
    _getCurrentLocation () {
@@ -264,20 +290,20 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
 
   void getReliefData() {
     databaseReference
-        .collection("relief")
-        .getDocuments()
-        .then((QuerySnapshot snapshot) {
-      snapshot.documents.forEach((f) {
-        //  Ref https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
-        GeoPoint pos = f.data['location'];
-        LatLng latLng = new LatLng(pos.latitude, pos.longitude);
-        _addMarker(f.data['name'],f.data['quantity'],f.data['package_type'],latLng);
-        _addHeatmap(f.data['quantity'],latLng);
+      .collection("relief")
+      .getDocuments()
+      .then((QuerySnapshot snapshot) {
+        snapshot.documents.forEach((f) {
+          //  Ref https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
+          GeoPoint pos = f.data['location'];
+          LatLng latLng = new LatLng(pos.latitude, pos.longitude);
+          _addMarker(f.data['name'],f.data['quantity'],f.data['package_type'],latLng);
+          _addHeatmap(f.data['quantity'],latLng);
 
+        });
       });
-    });
-  }
-
+    }
+    
   //heatmap generation helper functions
   List<WeightedLatLng> _createPoints(LatLng location,quantity) {
     final List<WeightedLatLng> points = <WeightedLatLng>[];
