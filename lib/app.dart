@@ -50,8 +50,9 @@ class _MySplashScreenState extends State<MySplashScreen> {
         fontSize: 35.0,
       ),),
       backgroundColor: Colors.white,
+      image: new Image.asset('assets/icon/product.png'),
       styleTextUnderTheLoader: new TextStyle(),
-      photoSize: 100.0,
+      photoSize: 50.0,
       onClick: ()=>print("Flutter BD"),
       loaderColor: Colors.green[800]
     );
