@@ -25,7 +25,8 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
   LatLng _lastMapPosition = _center;
 
   final databaseReference = Firestore.instance;
-
+  var selectedLocationID;
+  var selectedLocationQuantity;
   
 
   void _onMapCreated(GoogleMapController controller) {
@@ -48,12 +49,6 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
   @override
   Widget build(BuildContext context) {
     return 
-      // Scaffold(
-      //   appBar: AppBar(
-      //     title: Text("ত্রান দাও : Relief Distribution Map"),
-      //     backgroundColor: Colors.green[700],
-      //   ),
-      //   body: 
       Stack(
         children:<Widget>[
           _currentPosition != null ? GoogleMap(
@@ -67,6 +62,12 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
             markers: _markers,
             heatmaps: _heatmaps,
             onCameraMove: _onCameraMove,
+            onTap: (tappedLocation){
+              setState(() {
+                selectedLocationID = null;
+                selectedLocationQuantity = null;
+              });
+            },
           ):
           Center(
             child: CircularProgressIndicator(),
@@ -86,20 +87,22 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
               ),
             ),
           ),
-          Padding(
+          selectedLocationID != null ? Padding(
             padding: const EdgeInsets.all(20.0),
             child: Align(
               alignment: Alignment.bottomLeft,
               child:FloatingActionButton.extended(
                 onPressed: () {
-                  // _showQuantityModal(context);
+                  _showQuantityModal(context,selectedLocationID,selectedLocationQuantity);
                 },
-                label: Text('Update data'),
+                label: Text('Update data $selectedLocationQuantity'),
                 icon: Icon(Icons.edit),
                 backgroundColor: Colors.yellow[800],
               ),
             ),
-          ),
+          ) : Padding(
+                padding: const EdgeInsets.all(20.0),
+              ),
           _currentPosition != null ? Padding(
             padding: const EdgeInsets.all(0),
             child: Align(
@@ -123,7 +126,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
     _lastMapPosition = position.target;
   }
   // ------------------- View Functions ------------------------
-  void _addMarker(orgName,quantity,dataType,location,Timestamp timestamp) {
+  void _addMarker(orgName,quantity,dataType,location,Timestamp timestamp,[documentID]) {
     quantity=quantity.toString();
     var date = timestamp.toDate();
     var dateString = date.toString();
@@ -138,10 +141,17 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
           markerId: MarkerId(location.toString()),
           position: location,
           infoWindow: InfoWindow(
-            title: 'Data Source: $orgName, Entry: $dataType ',
+            title: 'Data Source: $orgName, Entry: $dataType $documentID' ,
             snippet: ' Number of infected: $quantity ,Date: $dateString',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(20),
+          onTap: (){
+            setState(() {
+              selectedLocationID = documentID;
+              selectedLocationQuantity = quantity;
+            });
+            
+          }
         )
       );
     });
@@ -175,7 +185,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
     });
 
   }
-  _showQuantityModal(context){
+  _showQuantityModal(context,[updateLocationID,updateLocationQuantity] ){
     final _formKey = GlobalKey<FormState>();
     int _quantity;
     showModalBottomSheet(context: context, 
@@ -193,6 +203,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
                     child:Align(
                       alignment: Alignment.topCenter,
                       child: TextFormField(
+                        initialValue: updateLocationQuantity,
                         decoration: const InputDecoration(
                             hintText: 'Enter new infection number for this location',
                             icon: Icon(Icons.add_box),
@@ -234,10 +245,25 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
                           // the form is invalid.
                           if (_formKey.currentState.validate()) {
                             // Process data.
-                            createInfectedRecord("IEDCR",_quantity,"manual");
+                            if(updateLocationID == null){
+                              createInfectedRecord("IEDCR",_quantity,"manual");
+                              _addMarker("IEDCR",_quantity,"manual",null,Timestamp.now());
+                              _addHeatmap(_quantity,null);
+                            }else{
+                              print("record updated");
+                              updateInfectedRecord(updateLocationID,_quantity);
+                              // var markerid = _markers.firstWhere((item) => item.markerId == );
+                              setState(() {
+                                selectedLocationQuantity = _quantity;
+                                _markers.removeWhere((m) {
+                                    print("markerID"+ m.markerId.value);
+                                    print("locationId"+_lastMapPosition.toString());
+                                    return m.markerId.value == _lastMapPosition.toString();
+                                   });
+                                // _markers.remove(MarkerId( _lastMapPosition.toString()));
+                              });
+                            }
                             Navigator.pop(context);
-                            _addMarker("IEDCR",_quantity,"manual",null,Timestamp.now());
-                            _addHeatmap(_quantity,null);
                           }
                         },
                       ),
@@ -278,6 +304,16 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
         });
 
   }
+  void updateInfectedRecord(documentId,quantity) {
+    try {
+      databaseReference
+          .collection('infected')
+          .document('$documentId')
+          .updateData({'quantity': quantity});
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 
   void getInfectedData() {
     databaseReference
@@ -288,7 +324,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
         //  Ref https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
         GeoPoint pos = f.data['location'];
         LatLng latLng = new LatLng(pos.latitude, pos.longitude);
-        _addMarker(f.data['name'],f.data['quantity'],f.data['data_type'],latLng,f.data['time']);
+        _addMarker(f.data['name'],f.data['quantity'],f.data['data_type'],latLng,f.data['time'],f.documentID);
         _addHeatmap(f.data['quantity'],latLng);
 
       });
