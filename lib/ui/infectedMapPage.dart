@@ -254,12 +254,13 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
                               print("record updated");
                               updateInfectedRecord(updateLocationID,_quantity);
                               setState(() {
-                                selectedLocationQuantity = _quantity;
+                                selectedLocationQuantity = null;
+                                selectedLocationID = null;
                                 _markers.removeWhere((m) {
                                     return m.markerId.value == updateLocationMarkerId.toString();
                                    });
                               });
-                              _addMarker("IEDCR",_quantity,"manual",updateLocationMarkerId,Timestamp.now());
+                              _addMarker("IEDCR",_quantity,"manual",null,Timestamp.now());
                             }
                             Navigator.pop(context);
                           }
