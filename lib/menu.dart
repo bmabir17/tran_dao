@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:geolocator/geolocator.dart';
 
 import "package:tran_dao/ui/reliefMapPage.dart";
+import "package:tran_dao/ui/infectedMapPage.dart";
 
 class MenuPage extends StatefulWidget{
   MenuPage();
@@ -48,10 +49,7 @@ class _MenuPageState extends State<MenuPage>{
       body: Center(
         child: <Widget>[
           ReliefMapPage(currentPosition:_currentPosition),
-          Text(
-            'Infected Map',
-            style: optionStyle,
-          ),
+          InfectedMapPage(currentPosition:_currentPosition),
           // Text(
           //   'Index 2: School',
           //   style: optionStyle,
