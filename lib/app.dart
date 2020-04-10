@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tran_dao/ui/loginPage.dart';
 import "package:tran_dao/ui/reliefMapPage.dart";
 import "package:tran_dao/menu.dart";
 import 'package:splashscreen/splashscreen.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 class TranDao extends StatefulWidget {
   @override
   _TranDaoState createState() => _TranDaoState();
@@ -16,10 +17,12 @@ class _TranDaoState extends State<TranDao> {
     _initPage=MySplashScreen();
 
     return MaterialApp(
-      home: _initPage,
+      // home: _initPage,
+      home: LoginPage(),
       routes: <String, WidgetBuilder>{
         // '/': (BuildContext context) => _initPage,
-        '/reliefMap': (BuildContext context) => ReliefMapPage(),
+        '/home': (BuildContext context) => MenuPage(),
+        '/login': (BuildContext context) => LoginPage(),
         // '/signup': (BuildContext context) => SignupPage(),
         // '/addCamera': (BuildContext context) => AddCamera(socketIO),
         // '/home': (BuildContext context) => HomePage(),
