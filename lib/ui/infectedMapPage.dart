@@ -27,6 +27,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
   final databaseReference = Firestore.instance;
   var selectedLocationID;
   var selectedLocationQuantity;
+  var selectedLocationMarkerId;
   
 
   void _onMapCreated(GoogleMapController controller) {
@@ -93,7 +94,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
               alignment: Alignment.bottomLeft,
               child:FloatingActionButton.extended(
                 onPressed: () {
-                  _showQuantityModal(context,selectedLocationID,selectedLocationQuantity);
+                  _showQuantityModal(context,selectedLocationID,selectedLocationQuantity,selectedLocationMarkerId);
                 },
                 label: Text('Update data $selectedLocationQuantity'),
                 icon: Icon(Icons.edit),
@@ -130,7 +131,6 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
     quantity=quantity.toString();
     var date = timestamp.toDate();
     var dateString = date.toString();
-    // var date = new DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
     if(location == null){
       location=_lastMapPosition;
     }
@@ -149,6 +149,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
             setState(() {
               selectedLocationID = documentID;
               selectedLocationQuantity = quantity;
+              selectedLocationMarkerId = location;
             });
             
           }
@@ -185,7 +186,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
     });
 
   }
-  _showQuantityModal(context,[updateLocationID,updateLocationQuantity] ){
+  _showQuantityModal(context,[updateLocationID,updateLocationQuantity,updateLocationMarkerId] ){
     final _formKey = GlobalKey<FormState>();
     int _quantity;
     showModalBottomSheet(context: context, 
@@ -252,16 +253,13 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
                             }else{
                               print("record updated");
                               updateInfectedRecord(updateLocationID,_quantity);
-                              // var markerid = _markers.firstWhere((item) => item.markerId == );
                               setState(() {
                                 selectedLocationQuantity = _quantity;
                                 _markers.removeWhere((m) {
-                                    print("markerID"+ m.markerId.value);
-                                    print("locationId"+_lastMapPosition.toString());
-                                    return m.markerId.value == _lastMapPosition.toString();
+                                    return m.markerId.value == updateLocationMarkerId.toString();
                                    });
-                                // _markers.remove(MarkerId( _lastMapPosition.toString()));
                               });
+                              _addMarker("IEDCR",_quantity,"manual",updateLocationMarkerId,Timestamp.now());
                             }
                             Navigator.pop(context);
                           }
