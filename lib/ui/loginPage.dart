@@ -46,7 +46,8 @@ class _LoginPageState extends State<LoginPage>{
     return OutlineButton(
       onPressed: (){
         signInWithGoogle().whenComplete((){
-          Navigator.pushNamed(context, '/home');
+          Navigator.pop(context);
+          // Navigator.pushNamed(context, '/home');
         });
       },
       splashColor: Colors.grey,

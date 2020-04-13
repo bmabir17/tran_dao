@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 
 import "package:tran_dao/ui/reliefMapPage.dart";
 import "package:tran_dao/ui/infectedMapPage.dart";
+import 'package:tran_dao/ui/userProfilePage.dart';
 
 class MenuPage extends StatefulWidget{
   MenuPage();
@@ -50,6 +51,7 @@ class _MenuPageState extends State<MenuPage>{
         child: <Widget>[
           ReliefMapPage(currentPosition:_currentPosition),
           InfectedMapPage(currentPosition:_currentPosition),
+          UserProfile(),
           // Text(
           //   'Index 2: School',
           //   style: optionStyle,
@@ -66,10 +68,10 @@ class _MenuPageState extends State<MenuPage>{
             icon: Icon(Icons.warning),
             title: Text('Infected Map'),
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.school),
-          //   title: Text('School'),
-          // ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            title: Text('Your profile'),
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.green[800],

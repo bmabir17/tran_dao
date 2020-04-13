@@ -1,10 +1,10 @@
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter_heatmap/google_maps_flutter_heatmap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tran_dao/common/sign_in.dart';
 
 class ReliefMapPage extends StatefulWidget{
   final Position currentPosition;
@@ -25,7 +25,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   LatLng _lastMapPosition = _center;
 
   final databaseReference = Firestore.instance;
-
+  // bool loginStatus = ;
   
 
   void _onMapCreated(GoogleMapController controller) {
@@ -78,7 +78,16 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
               alignment: Alignment.bottomRight,
               child:FloatingActionButton.extended(
                 onPressed: () {
-                  _showQuantityModal(context);
+                  checkLogin().then(
+                    (bool loginStatus){
+                      print(loginStatus);
+                      if (loginStatus){
+                        _showQuantityModal(context);
+                      }else{
+                        Navigator.pushNamed(context, '/login');
+                      }
+                    }
+                  );
                 },
                 label: Text('New Relief'),
                 icon: Icon(Icons.add),
