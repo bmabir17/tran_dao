@@ -1,10 +1,10 @@
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter_heatmap/google_maps_flutter_heatmap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tran_dao/common/sign_in.dart';
 
 class ReliefMapPage extends StatefulWidget{
   final Position currentPosition;
@@ -25,7 +25,8 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   LatLng _lastMapPosition = _center;
 
   final databaseReference = Firestore.instance;
-
+  bool loginStatus=false;
+  
   
 
   void _onMapCreated(GoogleMapController controller) {
@@ -38,9 +39,13 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
     _currentPosition = currentPosition;
     if(currentPosition == null){
       _getCurrentLocation();
-      print("current location not passed");
     }
     getReliefData();
+    checkLogin().then((bool stat){
+      setState(() {
+        loginStatus = stat;
+      });
+    });
     super.initState();
     
   }
@@ -48,12 +53,6 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   @override
   Widget build(BuildContext context) {
     return 
-      // Scaffold(
-      //   appBar: AppBar(
-      //     title: Text("ত্রান দাও : Relief Distribution Map"),
-      //     backgroundColor: Colors.green[700],
-      //   ),
-      //   body: 
       Stack(
         children:<Widget>[
           _currentPosition != null ? GoogleMap(
@@ -78,7 +77,15 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
               alignment: Alignment.bottomRight,
               child:FloatingActionButton.extended(
                 onPressed: () {
-                  _showQuantityModal(context);
+                  if (loginStatus){
+                    _showQuantityModal(context);
+                  }else{
+                    Navigator.of(context).pushNamed('/login').then((value){
+                      setState(() {
+                        loginStatus = true;
+                      });
+                    });
+                  }
                 },
                 label: Text('New Relief'),
                 icon: Icon(Icons.add),
@@ -100,7 +107,6 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
             child:Text("Loading Map"),
           ),
         ],
-      // ), 
       );
   }
 
@@ -142,9 +148,6 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
       rad = 50;  
       
     }
-    
-    
-    // print("heatmaps:$_heatmaps");
     setState(() {
       _heatmaps.add(
         Heatmap(

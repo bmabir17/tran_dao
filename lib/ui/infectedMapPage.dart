@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter_heatmap/google_maps_flutter_heatmap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tran_dao/common/sign_in.dart';
 
 class InfectedMapPage extends StatefulWidget{
   final Position currentPosition;
@@ -28,7 +29,10 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
   var selectedLocationID;
   var selectedLocationQuantity;
   var selectedLocationMarkerId;
+
+  bool loginStatus;
   
+  String adminEmail ="anantoalive17@gmail.com";
 
   void _onMapCreated(GoogleMapController controller) {
     
@@ -40,9 +44,13 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
     _currentPosition = currentPosition;
     if(currentPosition == null){
       _getCurrentLocation();
-      print("current location not passed");
     }
     getInfectedData();
+    checkLogin().then((bool stat){
+      setState(() {
+        loginStatus = stat;
+      });
+    });
     super.initState();
     
   }
@@ -52,7 +60,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
     return 
       Stack(
         children:<Widget>[
-          _currentPosition != null ? GoogleMap(
+          (_currentPosition != null) ? GoogleMap(
             onMapCreated: _onMapCreated,
             myLocationEnabled: true,
             myLocationButtonEnabled: true,
@@ -80,7 +88,21 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
               alignment: Alignment.bottomRight,
               child:FloatingActionButton.extended(
                 onPressed: () {
-                  _showQuantityModal(context);
+                  if (loginStatus && email!=null){
+                    if(email == adminEmail){
+                      _showQuantityModal(context);
+                    }else{
+                      _showDialog("Admin Permission needed");
+                    }
+                  }else{
+                    Navigator.of(context).pushNamed('/login').then((value){
+                      checkLogin().then((bool stat){
+                        setState(() {
+                          loginStatus = stat;
+                        });
+                      });
+                    });
+                  }
                 },
                 label: Text('New infection'),
                 icon: Icon(Icons.add),
@@ -88,7 +110,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
               ),
             ),
           ),
-          selectedLocationID != null ? Padding(
+          (selectedLocationID != null && loginStatus) ? Padding(
             padding: const EdgeInsets.all(20.0),
             child: Align(
               alignment: Alignment.bottomLeft,
@@ -96,7 +118,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
                 onPressed: () {
                   _showQuantityModal(context,selectedLocationID,selectedLocationQuantity,selectedLocationMarkerId);
                 },
-                label: Text('Update data $selectedLocationQuantity'),
+                label: Text('Update: $selectedLocationQuantity'),
                 icon: Icon(Icons.edit),
                 backgroundColor: Colors.yellow[800],
               ),
@@ -141,7 +163,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
           markerId: MarkerId(location.toString()),
           position: location,
           infoWindow: InfoWindow(
-            title: 'Data Source: $orgName, Entry: $dataType $documentID' ,
+            title: 'Data Source: $orgName, Entry: $dataType' ,
             snippet: ' Number of infected: $quantity ,Date: $dateString',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(20),
@@ -168,11 +190,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
         rad = 10 + (quantity/ 200).round();
       }
       rad = 50;  
-      
     }
-    
-    
-    // print("heatmaps:$_heatmaps");
     setState(() {
       _heatmaps.add(
         Heatmap(
@@ -274,6 +292,29 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
           ],
         ),
       )
+    );
+  }
+  // https://medium.com/@nils.backe/flutter-alert-dialogs-9b0bb9b01d28
+  void _showDialog(String message,[String title="Alert"]) {
+    // flutter defined function
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: new Text(title),
+          content: new Text(message),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("ok"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
   // ------------------ I/O functions ------------
