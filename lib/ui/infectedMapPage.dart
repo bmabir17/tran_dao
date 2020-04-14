@@ -118,7 +118,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
                 onPressed: () {
                   _showQuantityModal(context,selectedLocationID,selectedLocationQuantity,selectedLocationMarkerId);
                 },
-                label: Text('Update data $selectedLocationQuantity'),
+                label: Text('Update: $selectedLocationQuantity'),
                 icon: Icon(Icons.edit),
                 backgroundColor: Colors.yellow[800],
               ),
@@ -163,7 +163,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
           markerId: MarkerId(location.toString()),
           position: location,
           infoWindow: InfoWindow(
-            title: 'Data Source: $orgName, Entry: $dataType $documentID' ,
+            title: 'Data Source: $orgName, Entry: $dataType' ,
             snippet: ' Number of infected: $quantity ,Date: $dateString',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(20),

@@ -44,7 +44,11 @@ class _MenuPageState extends State<MenuPage>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("ত্রান দাও : Relief Distribution Map"),
+        title: const Text("ত্রান দাও : Relief Distribution Map",textAlign: TextAlign.center,),
+        leading: new IconButton(
+          icon: new Icon(Icons.track_changes),
+          onPressed: () {},
+        ),
         backgroundColor: Colors.green[800],
       ),
       body: Center(

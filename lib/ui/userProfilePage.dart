@@ -84,10 +84,21 @@ class _UserProfileState extends State<UserProfile> {
               color: Colors.red[700],
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Sign Out',
-                  style: TextStyle(fontSize: 25, color: Colors.white),
-                ),
+                child:Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[ 
+                    Text(
+                      'Sign Out',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
+                    SizedBox(width: 10,),
+                    Icon(
+                      Icons.launch,
+                      color: Colors.white,
+                    )
+                  ]
+                )
               ),
               elevation: 5,
               shape: RoundedRectangleBorder(
@@ -116,11 +127,22 @@ class _UserProfileState extends State<UserProfile> {
             },
             color: Colors.green[700],
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Sign In to view profile',
-                style: TextStyle(fontSize: 25, color: Colors.white),
-              ),
+              padding: const EdgeInsets.all(18.0),
+              child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[ 
+                    Text(
+                      'Sign in to view profile',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
+                    SizedBox(width: 10,),
+                    Icon(
+                      Icons.exit_to_app,
+                      color: Colors.white,
+                    )
+                  ]
+                ),
             ),
             elevation: 5,
             shape: RoundedRectangleBorder(
