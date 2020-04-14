@@ -42,7 +42,12 @@ Future<String> signInWithGoogle() async {
 
 Future<bool> checkLogin() async {
   final FirebaseUser currentUser = await _auth.currentUser();
-  if(currentUser != null){
+  if(currentUser != null ){
+    if(email ==null){
+      name = currentUser.displayName;
+      email = currentUser.email;
+      imageUrl = currentUser.photoUrl;
+    }
     //userLogged in
     return true;
   }else{
@@ -51,7 +56,7 @@ Future<bool> checkLogin() async {
 }
 
 void signOutGoogle() async{
-  await googleSignIn.signOut();
+  // await googleSignIn.signOut();
   await _auth.signOut();
 
   print("User Sign Out");

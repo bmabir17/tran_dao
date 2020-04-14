@@ -25,7 +25,8 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   LatLng _lastMapPosition = _center;
 
   final databaseReference = Firestore.instance;
-  // bool loginStatus = ;
+  bool loginStatus=false;
+  
   
 
   void _onMapCreated(GoogleMapController controller) {
@@ -38,9 +39,13 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
     _currentPosition = currentPosition;
     if(currentPosition == null){
       _getCurrentLocation();
-      print("current location not passed");
     }
     getReliefData();
+    checkLogin().then((bool stat){
+      setState(() {
+        loginStatus = stat;
+      });
+    });
     super.initState();
     
   }
@@ -78,16 +83,15 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
               alignment: Alignment.bottomRight,
               child:FloatingActionButton.extended(
                 onPressed: () {
-                  checkLogin().then(
-                    (bool loginStatus){
-                      print(loginStatus);
-                      if (loginStatus){
-                        _showQuantityModal(context);
-                      }else{
-                        Navigator.pushNamed(context, '/login');
-                      }
-                    }
-                  );
+                  if (loginStatus){
+                    _showQuantityModal(context);
+                  }else{
+                    Navigator.of(context).pushNamed('/login').then((value){
+                      setState(() {
+                        loginStatus = true;
+                      });
+                    });
+                  }
                 },
                 label: Text('New Relief'),
                 icon: Icon(Icons.add),
@@ -109,7 +113,6 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
             child:Text("Loading Map"),
           ),
         ],
-      // ), 
       );
   }
 
@@ -151,9 +154,6 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
       rad = 50;  
       
     }
-    
-    
-    // print("heatmaps:$_heatmaps");
     setState(() {
       _heatmaps.add(
         Heatmap(
