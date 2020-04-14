@@ -40,7 +40,6 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
     _currentPosition = currentPosition;
     if(currentPosition == null){
       _getCurrentLocation();
-      print("current location not passed");
     }
     getInfectedData();
     super.initState();
@@ -168,11 +167,7 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
         rad = 10 + (quantity/ 200).round();
       }
       rad = 50;  
-      
     }
-    
-    
-    // print("heatmaps:$_heatmaps");
     setState(() {
       _heatmaps.add(
         Heatmap(

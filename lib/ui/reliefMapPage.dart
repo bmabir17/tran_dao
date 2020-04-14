@@ -53,12 +53,6 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   @override
   Widget build(BuildContext context) {
     return 
-      // Scaffold(
-      //   appBar: AppBar(
-      //     title: Text("ত্রান দাও : Relief Distribution Map"),
-      //     backgroundColor: Colors.green[700],
-      //   ),
-      //   body: 
       Stack(
         children:<Widget>[
           _currentPosition != null ? GoogleMap(

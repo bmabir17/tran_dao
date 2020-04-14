@@ -56,7 +56,6 @@ Future<bool> checkLogin() async {
 }
 
 void signOutGoogle() async{
-  // await googleSignIn.signOut();
   await _auth.signOut();
 
   print("User Sign Out");

@@ -29,8 +29,7 @@ class _UserProfileState extends State<UserProfile> {
       child: _getProfile(context)
     );
   }
-  Widget _getProfile(context){ 
-    print('loginStatus $loginStatus');
+  Widget _getProfile(context){
     if(loginStatus) {
       return new Center(
         child:Column(
@@ -78,8 +77,6 @@ class _UserProfileState extends State<UserProfile> {
             RaisedButton(
               onPressed: () {
                 signOutGoogle();
-                // Navigator.of(context).popAndPushNamed('/home');
-                // Navigator.of(context).pop
                 setState(() {
                   loginStatus = false;
                 });
@@ -103,7 +100,6 @@ class _UserProfileState extends State<UserProfile> {
     return _getSignIn(context);
   }
   Widget _getSignIn(BuildContext context){
-    print('loginStatus $loginStatus');
     return Center(
       child:Column( 
         children:<Widget>[
