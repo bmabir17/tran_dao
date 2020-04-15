@@ -333,16 +333,16 @@ class _InfectedMapPageState extends State<InfectedMapPage>{
   }
   // reference https://medium.com/@atul.sharma_94062/how-to-use-cloud-firestore-with-flutter-e6f9e8821b27
   void createInfectedRecord(name,quantity,dataType) async {
-    DocumentReference ref = await databaseReference.collection("infected")
-        .add({
+    Timestamp time = Timestamp.now();
+    CollectionReference reliefCollection = databaseReference.collection("infected");
+    await reliefCollection.document().setData({
           'name': name,
           'quantity': quantity,
           'location': GeoPoint(_lastMapPosition.latitude,_lastMapPosition.longitude),
           'data_type':dataType,
-          'time':Timestamp.now()
-
+          'time':time,
+          'submitted_by':email
         });
-
   }
   void updateInfectedRecord(documentId,quantity) {
     try {
