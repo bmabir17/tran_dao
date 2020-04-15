@@ -220,9 +220,9 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                           // the form is invalid.
                           if (_formKey.currentState.validate()) {
                             // Process data.
-                            createReliefRecord("Abir",_quantity,"Weekly");
+                            createReliefRecord(name,_quantity,"Weekly");
                             Navigator.pop(context);
-                            _addMarker("Abir",_quantity,"Weekly",null);
+                            _addMarker(name,_quantity,"Weekly",null);
                             _addHeatmap(_quantity,null);
                           }
                         },
@@ -253,14 +253,15 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   }
   // reference https://medium.com/@atul.sharma_94062/how-to-use-cloud-firestore-with-flutter-e6f9e8821b27
   void createReliefRecord(name,quantity,packageType) async {
-    DocumentReference ref = await databaseReference.collection("relief")
-        .add({
+    Timestamp time = Timestamp.now();
+    CollectionReference reliefCollection = databaseReference.collection("relief");
+    await reliefCollection.document().setData({
           'name': name,
           'quantity': quantity,
           'location': GeoPoint(_lastMapPosition.latitude,_lastMapPosition.longitude),
           'package_type':packageType,
-          'time':Timestamp.now()
-
+          'time':time,
+          'submitted_by':email
         });
 
   }
