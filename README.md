@@ -11,13 +11,11 @@ TODO
 
 
 ## Demo Videos
-Demo 1, Data Input App
 
-<a href="https://www.youtube.com/embed/AaXlYSTuU_s 
-" target="_blank"><img src="http://img.youtube.com/vi/AaXlYSTuU_s/0.jpg" 
-alt="MultiFaceTracker_demo1 Video" width="640" height="480" border="1" /></a>
-
-Version 1.0, Data Input App
+Version 1.0, 
+- Data Input & heatmap visualization of relief Map
+- Data Input for admin only & heatmap visualization of infected Map
+- Google signin option
 
 <a href="https://www.youtube.com/embed/_N2UFPRs-vI 
 " target="_blank"><img src="http://img.youtube.com/vi/_N2UFPRs-vI/0.jpg" 
