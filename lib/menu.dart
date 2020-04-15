@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:tran_dao/ui/faceMatchPage.dart';
 
 import "package:tran_dao/ui/reliefMapPage.dart";
 import "package:tran_dao/ui/infectedMapPage.dart";
@@ -55,6 +56,7 @@ class _MenuPageState extends State<MenuPage>{
         child: <Widget>[
           ReliefMapPage(currentPosition:_currentPosition),
           InfectedMapPage(currentPosition:_currentPosition),
+          FaceMatch(),
           UserProfile(),
           // Text(
           //   'Index 2: School',
@@ -71,6 +73,10 @@ class _MenuPageState extends State<MenuPage>{
           BottomNavigationBarItem(
             icon: Icon(Icons.warning),
             title: Text('Infected Map'),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.face),
+            title: Text('Face Match'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

@@ -12,6 +12,10 @@
         <!-- for google maps api -->
         <meta-data android:name="com.google.android.geo.API_KEY"
                android:value="AIzaSyAckCRxwzAmtKcRstOsnbqW7oOK6ELEjRg"/>
+
+        <meta-data 
+            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:value="ocr,face"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
