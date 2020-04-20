@@ -177,9 +177,11 @@ packages:
   flutter_camera_ml_vision:
     dependency: "direct main"
     description:
-      name: flutter_camera_ml_vision
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: dd18bd6b5e05c0e69cf450b849d30e9de3556f77
+      url: "git://github.com/rushio-consulting/flutter_camera_ml_vision.git"
+    source: git
     version: "2.2.5"
   flutter_launcher_icons:
     dependency: "direct main"
