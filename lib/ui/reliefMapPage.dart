@@ -6,6 +6,14 @@ import 'package:google_maps_flutter_heatmap/google_maps_flutter_heatmap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tran_dao/common/sign_in.dart';
 
+import 'package:google_maps_webservice/places.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
+
+const kGoogleApiKey = "AIzaSyCwWKjMQk8L2Yx32UK74chWD38AmBAy7fo";
+
+// to get places detail (lat/lng)
+GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
+
 class ReliefMapPage extends StatefulWidget{
   final Position currentPosition;
   ReliefMapPage({this.currentPosition});
@@ -13,7 +21,6 @@ class ReliefMapPage extends StatefulWidget{
   @override
   _ReliefMapPageState createState() => _ReliefMapPageState(currentPosition : currentPosition);
 }
-
 class _ReliefMapPageState extends State<ReliefMapPage>{
   Position _currentPosition;
   var currentPosition;
@@ -55,6 +62,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
     return 
       Stack(
         children:<Widget>[
+          
           _currentPosition != null ? GoogleMap(
             onMapCreated: _onMapCreated,
             myLocationEnabled: true,
@@ -69,6 +77,57 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
           ):
           Center(
             child: CircularProgressIndicator(),
+          ),
+          Padding(padding: const EdgeInsets.all(10),
+            child: Align(
+              alignment: Alignment.topCenter,
+              
+              child:Container(
+                color: Colors.white,
+                child:Row(
+                  children: <Widget>[
+                    IconButton(
+                      splashColor: Colors.grey,
+                      icon: Icon(Icons.menu),
+                      onPressed: (){},
+                    ),
+                    Expanded(
+                      // child: TextField(
+                      //   cursorColor: Colors.black,
+                      //   // keyboardType: TextInputType.text,
+                      //   // textInputAction: TextInputAction.go,
+                      //   onTap: _handleSearch,
+                      //   decoration: InputDecoration(
+                      //       border: InputBorder.none,
+                      //       contentPadding:
+                      //           EdgeInsets.symmetric(horizontal: 15),
+                      //       hintText: "Search..."),
+                      // ),
+                      child: FlatButton(
+                        onPressed: _handleSearch,
+                        child: Text("Place Search"),
+                        ),
+                    ),
+                    !loginStatus ? Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.deepPurple,
+                        child: Text('G'),
+                      ),
+                    ):
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: CircleAvatar(
+                        // backgroundColor: Colors.deepPurple,
+                        backgroundImage: NetworkImage(
+                          imageUrl
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           // Ref: https://api.flutter.dev/flutter/material/FloatingActionButton-class.html#material.FloatingActionButton.2
           Padding(
@@ -164,7 +223,8 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   _showQuantityModal(context){
     final _formKey = GlobalKey<FormState>();
     int _quantity;
-    showModalBottomSheet(context: context, 
+    showModalBottomSheet(context: context,
+      isScrollControlled: true, 
       builder: (context)=> Container(
         color: Colors.red[50],
         height: 180,
@@ -292,5 +352,45 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   WeightedLatLng _createWeightedLatLng(double lat, double lng, int weight) {
     return WeightedLatLng(point: LatLng(lat, lng), intensity: weight);
   }
+
+  
+  // https://pub.dev/packages/flutter_google_places#-example-tab-
+  void _handleSearch(){
+    // show input autocomplete with selected mode
+    // then get the Prediction selected
+    PlacesAutocomplete.show(
+      context: context,
+      apiKey: kGoogleApiKey,
+      onError: onSearchError,
+      mode: Mode.overlay,
+      region: "bd",
+      language: "en",
+      // components: [Component(Component.country, "en")],
+    ).then((p){
+      print("place id $p.placeId");
+      displayPrediction(p);
+    });
+  }
+  void onSearchError(PlacesAutocompleteResponse response) {
+    Scaffold.of(context).showSnackBar(
+      SnackBar(content: Text(response.errorMessage)),
+    );
+  }
+  Future<Null> displayPrediction(Prediction p) async {
+  if (p != null) {
+    // get detail (lat/lng)
+    PlacesDetailsResponse detail = await _places.getDetailsByPlaceId(p.placeId);
+    final lat = detail.result.geometry.location.lat;
+    final lng = detail.result.geometry.location.lng;
+    print(detail.result.name);
+    LatLng searchedLatLng = LatLng(lat, lng);
+    mapController.moveCamera(CameraUpdate.newLatLng(searchedLatLng));
+    Scaffold.of(context).showSnackBar(
+      SnackBar(content: Text("${p.description} - $lat/$lng")),
+    );
+  }
 }
+}
+
+
 
