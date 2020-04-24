@@ -172,7 +172,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
     _lastMapPosition = position.target;
   }
   // ------------------- View Functions ------------------------
-  void _addMarker(orgName,quantity,packageType,location) {
+  void _addMarker(orgName,quantity,locationName,packageType,location) {
     quantity=quantity.toString();
     if(location == null){
       location=_lastMapPosition;
@@ -185,7 +185,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
           position: location,
           infoWindow: InfoWindow(
             title: 'Your/Organization Name: $orgName',
-            snippet: '$packageType package with Quantity: $quantity ',
+            snippet: '$packageType package with Quantity: $quantity in $locationName',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(0),
         )
@@ -306,7 +306,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                             // Process data.
                             createReliefRecord(name,_quantity,_locationName,"Weekly");
                             Navigator.pop(context);
-                            _addMarker(name,_quantity,"Weekly",null);
+                            _addMarker(name,_quantity,_locationName,"Weekly",null);
                             _addHeatmap(_quantity,null);
                           }
                         },
@@ -384,7 +384,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
         //  Ref https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
         GeoPoint pos = f.data['location'];
         LatLng latLng = new LatLng(pos.latitude, pos.longitude);
-        _addMarker(f.data['name'],f.data['quantity'],f.data['package_type'],latLng);
+        _addMarker(f.data['name'],f.data['quantity'],f.data['location_name'],f.data['package_type'],latLng);
         _addHeatmap(f.data['quantity'],latLng);
 
       });
