@@ -183,6 +183,13 @@ packages:
       url: "git://github.com/rushio-consulting/flutter_camera_ml_vision.git"
     source: git
     version: "2.2.5"
+  flutter_google_places:
+    dependency: "direct main"
+    description:
+      name: flutter_google_places
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.4"
   flutter_launcher_icons:
     dependency: "direct main"
     description:
@@ -228,6 +235,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.1+1"
+  google_maps_webservice:
+    dependency: transitive
+    description:
+      name: google_maps_webservice
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.16"
   google_sign_in:
     dependency: "direct main"
     description:
@@ -368,6 +382,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
+  rxdart:
+    dependency: transitive
+    description:
+      name: rxdart
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.23.1"
   sky_engine:
     dependency: transitive
     description: flutter

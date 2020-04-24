@@ -52,6 +52,7 @@ class _MenuPageState extends State<MenuPage>{
         ),
         backgroundColor: Colors.green[800],
       ),
+      resizeToAvoidBottomInset: true,
       body: Center(
         child: <Widget>[
           ReliefMapPage(currentPosition:_currentPosition),

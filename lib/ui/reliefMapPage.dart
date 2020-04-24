@@ -6,6 +6,14 @@ import 'package:google_maps_flutter_heatmap/google_maps_flutter_heatmap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tran_dao/common/sign_in.dart';
 
+import 'package:google_maps_webservice/places.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
+
+const kGoogleApiKey = "AIzaSyCwWKjMQk8L2Yx32UK74chWD38AmBAy7fo";
+
+// to get places detail (lat/lng)
+GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
+
 class ReliefMapPage extends StatefulWidget{
   final Position currentPosition;
   ReliefMapPage({this.currentPosition});
@@ -13,7 +21,6 @@ class ReliefMapPage extends StatefulWidget{
   @override
   _ReliefMapPageState createState() => _ReliefMapPageState(currentPosition : currentPosition);
 }
-
 class _ReliefMapPageState extends State<ReliefMapPage>{
   Position _currentPosition;
   var currentPosition;
@@ -26,7 +33,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
 
   final databaseReference = Firestore.instance;
   bool loginStatus=false;
-  
+  var searchTextController=TextEditingController(text: '');
   
 
   void _onMapCreated(GoogleMapController controller) {
@@ -52,23 +59,72 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
 
   @override
   Widget build(BuildContext context) {
-    return 
-      Stack(
-        children:<Widget>[
-          _currentPosition != null ? GoogleMap(
-            onMapCreated: _onMapCreated,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-            initialCameraPosition: CameraPosition(
-              target:  LatLng(_currentPosition.latitude,_currentPosition.longitude),
-              zoom: 11.0,
+    
+        return 
+          Stack(
+            children:<Widget>[
+              
+              _currentPosition != null ? GoogleMap(
+                onMapCreated: _onMapCreated,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                initialCameraPosition: CameraPosition(
+                  target:  LatLng(_currentPosition.latitude,_currentPosition.longitude),
+                  zoom: 11.0,
+                ),
+                markers: _markers,
+                heatmaps: _heatmaps,
+                onCameraMove: _onCameraMove,
+              ):
+              Center(
+                child: CircularProgressIndicator(),
+              ),
+              Padding(padding: const EdgeInsets.all(10),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  
+                  child:Container(
+                    color: Colors.white,
+                    child:Row(
+                      children: <Widget>[
+                        IconButton(
+                          splashColor: Colors.grey,
+                          icon: Icon(Icons.menu),
+                          onPressed: (){},
+                        ),
+                        Expanded(
+                          child: TextField(
+                            cursorColor: Colors.black,
+                            controller: searchTextController,
+                        onChanged: (val){
+                          _handleSearch(val);
+                        },
+                        decoration: InputDecoration(
+                            border: InputBorder.none,
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 15),
+                            hintText: "Search..."),
+                      ),
+                    ),
+                    !loginStatus ? Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.deepPurple,
+                        child: Text('G'),
+                      ),
+                    ):
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(
+                          imageUrl
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            markers: _markers,
-            heatmaps: _heatmaps,
-            onCameraMove: _onCameraMove,
-          ):
-          Center(
-            child: CircularProgressIndicator(),
           ),
           // Ref: https://api.flutter.dev/flutter/material/FloatingActionButton-class.html#material.FloatingActionButton.2
           Padding(
@@ -78,7 +134,8 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
               child:FloatingActionButton.extended(
                 onPressed: () {
                   if (loginStatus){
-                    _showQuantityModal(context);
+                    _getAddress(_lastMapPosition, asString:true)
+                    .then((value) => _showQuantityModal(context,value));
                   }else{
                     Navigator.of(context).pushNamed('/login').then((value){
                       setState(() {
@@ -94,7 +151,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
             ),
           ),
           _currentPosition != null ? Padding(
-            padding: const EdgeInsets.all(0),
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
             child: Align(
               alignment: Alignment.center,
               child: Icon(
@@ -115,7 +172,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
     _lastMapPosition = position.target;
   }
   // ------------------- View Functions ------------------------
-  void _addMarker(orgName,quantity,packageType,location) {
+  void _addMarker(orgName,quantity,locationName,packageType,location) {
     quantity=quantity.toString();
     if(location == null){
       location=_lastMapPosition;
@@ -128,7 +185,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
           position: location,
           infoWindow: InfoWindow(
             title: 'Your/Organization Name: $orgName',
-            snippet: '$packageType package with Quantity: $quantity ',
+            snippet: '$packageType package with Quantity: $quantity in $locationName',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(0),
         )
@@ -161,13 +218,14 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
     });
 
   }
-  _showQuantityModal(context){
+  _showQuantityModal(context,_locationName){
     final _formKey = GlobalKey<FormState>();
     int _quantity;
-    showModalBottomSheet(context: context, 
+    showModalBottomSheet(context: context,
+      isScrollControlled: true, 
       builder: (context)=> Container(
         color: Colors.red[50],
-        height: 180,
+        height: 250,
         child:Stack(
           children: <Widget>[
             Form(
@@ -202,6 +260,32 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                     ),
                   ),
                   Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child:Align(
+                      alignment: Alignment.topCenter,
+                      child: TextFormField(
+                        initialValue: _locationName,
+                        decoration: const InputDecoration(
+                            hintText: 'Current Location Name',
+                            icon: Icon(Icons.add_location),
+                          ),
+                        inputFormatters: <TextInputFormatter>[
+                        ],
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please enter current location Name';
+                          }
+                          return null;
+                        },
+                        onChanged: (value){
+                          setState(() {
+                            _locationName = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  Padding(
                     padding: const EdgeInsets.symmetric(vertical: 25.0,horizontal: 140.0),
                     child:Align(
                       alignment: Alignment.center,
@@ -220,9 +304,9 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
                           // the form is invalid.
                           if (_formKey.currentState.validate()) {
                             // Process data.
-                            createReliefRecord(name,_quantity,"Weekly");
+                            createReliefRecord(name,_quantity,_locationName,"Weekly");
                             Navigator.pop(context);
-                            _addMarker(name,_quantity,"Weekly",null);
+                            _addMarker(name,_quantity,_locationName,"Weekly",null);
                             _addHeatmap(_quantity,null);
                           }
                         },
@@ -240,30 +324,55 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   // ------------------ I/O functions ------------
   // Reference https://alligator.io/flutter/geolocator-plugin/
    _getCurrentLocation () {
-    final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-    geolocator
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
-        .then((Position position) {
-      setState(() {
-        _currentPosition = position;
-      });
-    }).catchError((e) {
-      print(e);
+    Geolocator().checkGeolocationPermissionStatus().then((var onValue){
+      if(onValue == GeolocationStatus.granted){
+        final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+        geolocator
+            .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+            .then((Position position) {
+          setState(() {
+            _currentPosition = position;
+          });
+        }).catchError((e) {
+          print(e);
+        });
+      }
     });
+    
   }
   // reference https://medium.com/@atul.sharma_94062/how-to-use-cloud-firestore-with-flutter-e6f9e8821b27
-  void createReliefRecord(name,quantity,packageType) async {
+  void createReliefRecord(name,quantity,locationName,packageType) async {
     Timestamp time = Timestamp.now();
     CollectionReference reliefCollection = databaseReference.collection("relief");
+    List locationDetails = await _getAddress(_lastMapPosition);
+    print(locationName);
     await reliefCollection.document().setData({
           'name': name,
           'quantity': quantity,
           'location': GeoPoint(_lastMapPosition.latitude,_lastMapPosition.longitude),
           'package_type':packageType,
+          'location_name': locationName,
+          'location_details':locationDetails,
           'time':time,
           'submitted_by':email
         });
+    
 
+  }
+  Future<dynamic> _getAddress(LatLng location,{bool asString}) async {
+    List<Placemark> placemarks = await Geolocator()
+        .placemarkFromCoordinates(location.latitude, location.longitude,localeIdentifier: 'en');
+    if (placemarks != null && placemarks.isNotEmpty) {
+      final Placemark pos = placemarks[0];
+      if(asString!=null && asString){
+        return pos.thoroughfare+','+pos.subLocality+','+pos.locality+','+pos.subAdministrativeArea+','+pos.country;
+      }
+      return [pos.thoroughfare,pos.subLocality , pos.locality, pos.subAdministrativeArea,pos.country];
+    }
+    if(asString!=null && asString){
+      return '';
+    }
+    return [];
   }
 
   void getReliefData() {
@@ -275,7 +384,7 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
         //  Ref https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
         GeoPoint pos = f.data['location'];
         LatLng latLng = new LatLng(pos.latitude, pos.longitude);
-        _addMarker(f.data['name'],f.data['quantity'],f.data['package_type'],latLng);
+        _addMarker(f.data['name'],f.data['quantity'],f.data['location_name'],f.data['package_type'],latLng);
         _addHeatmap(f.data['quantity'],latLng);
 
       });
@@ -292,5 +401,46 @@ class _ReliefMapPageState extends State<ReliefMapPage>{
   WeightedLatLng _createWeightedLatLng(double lat, double lng, int weight) {
     return WeightedLatLng(point: LatLng(lat, lng), intensity: weight);
   }
+
+  
+  // https://pub.dev/packages/flutter_google_places#-example-tab-
+  void _handleSearch(searchWord){
+    // show input autocomplete with selected mode
+    // then get the Prediction selected
+    PlacesAutocomplete.show(
+      startText: searchWord,
+      context: context,
+      apiKey: kGoogleApiKey,
+      onError: onSearchError,
+      mode: Mode.overlay,
+      region: "bd",
+      language: "en",
+    ).then((p){
+      displayPrediction(p);
+      setState(() {
+        searchTextController.text= p.description;
+      });
+    });
+  }
+  void onSearchError(PlacesAutocompleteResponse response) {
+    Scaffold.of(context).showSnackBar(
+      SnackBar(content: Text(response.errorMessage)),
+    );
+  }
+  Future<Null> displayPrediction(Prediction p) async {
+    if (p != null) {
+      // get detail (lat/lng)
+      PlacesDetailsResponse detail = await _places.getDetailsByPlaceId(p.placeId);
+      final lat = detail.result.geometry.location.lat;
+      final lng = detail.result.geometry.location.lng;
+      LatLng searchedLatLng = LatLng(lat, lng);
+      mapController.moveCamera(CameraUpdate.newLatLng(searchedLatLng));
+      // Scaffold.of(context).showSnackBar(
+      //   SnackBar(content: Text("${p.description} - $lat/$lng")),
+      // );
+    }
+  }
 }
+
+
 
