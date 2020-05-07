@@ -1,4 +1,5 @@
 # tran_dao
+![Dart CI](https://github.com/bmabir17/tran_dao/workflows/Dart%20CI/badge.svg?branch=master)
 
 A COVID-19 Relief Distribution app to record and suggest where more relief is needed according to the past data points.
 So that people who needs food more can be given more effectivly
