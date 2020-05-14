@@ -13,10 +13,11 @@ TODO
 
 ## Demo Videos
 
-Version 1.0, 
+Version 1.01, 
 - Data Input & heatmap visualization of relief Map
 - Data Input for admin only & heatmap visualization of infected Map
 - Google signin option
+- Face Match (to identify persons with more than one instance)
 
 <a href="https://www.youtube.com/embed/Ikq4sFqcCWU 
 " target="_blank"><img src="http://img.youtube.com/vi/Ikq4sFqcCWU/0.jpg" 
