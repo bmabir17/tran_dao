@@ -4,6 +4,8 @@
 A COVID-19 Relief Distribution app to record and suggest where more relief is needed according to the past data points.
 So that people who needs food more can be given more effectivly
 
+Tracking Dashboard: https://bmabir17.github.io/tran_dao/
+
 
 
 ## Getting Started
