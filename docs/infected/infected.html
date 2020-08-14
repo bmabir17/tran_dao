@@ -1,0 +1,476 @@
+<html>
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="../bootstrap-4.4.1-dist/css/bootstrap.min.css" >
+
+        <link rel="Chart" href="../chartjs-2.9.3-dist/Chart.min.css" >
+        <script src='../chartjs-2.9.3-dist/Chart.min.js'></script>
+
+        <script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
+        <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
+
+    </head>
+    <body>
+        <header class="navbar navbar-expand navbar-dark flex-md-row bg-info fixed-top">
+            <a class="navbar-brand" href="/sakib/index.html">covid19bd</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse " id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link disabled" href="#" aria-disabled="true">Infected Status</a>
+                    <a class="nav-item nav-link active" href="/sakib/relief/relief.html">Relief Status</a>
+                </div>
+            </div>
+        </header>
+        <div class="container-fluid" style="padding-top: 56px;">
+            <div class="row">
+                <div class="col-md-8 col-12" style="height: 94.5%; padding: 0em; position: fixed;">
+                    <div id='map' style='height: 100%; position: relative;' ></div>
+                </div>
+                <div class="col-md-4 col-6" style="background-color: moccasin; margin-left: 66.65%;">
+                    <div class="row" style="padding-top: 30px; padding-bottom: 23px">
+                        <div class="col-md-6 col-10 flex-column d-flex">
+                            <span class="display-4 font-weight-bold text-center">
+                                <span>1838</span>
+                            </span>
+                            <span class="title font-weight-bold text-center">Infected</span>
+                        </div>
+                        <div class="col-md-6 col-10 align-center flex-column d-flex">
+                            <span class="display-4 font-weight-bold text-center">
+                                <span>26</span>
+                            </span>
+                            <span class="title font-weight-bold text-center">Infected (Last 24H)</span>
+                        </div>
+                    </div>
+                    <div class="row" style="padding-bottom: 23px">
+                        <div class="col-md-6 col-10 align-center flex-column d-flex">
+                            <span class="display-4 font-weight-bold text-center">
+                                <span>58</span>
+                            </span>
+                            <span class="title font-weight-bold text-center">Recovered</span>
+                        </div>
+                        <div class="col-md-6 col-10 align-center flex-column d-flex">
+                            <span class="display-4 font-weight-bold text-center">
+                                <span>9</span>
+                            </span>
+                            <span class="title font-weight-bold text-center">Recovered (Last 24H)</span>
+                        </div>
+                    </div>
+                    <div class="row" style="padding-bottom: 23px">
+                        <div class="col-md-6 col-10 align-center flex-column d-flex">
+                            <span class="display-4 font-weight-bold text-center">
+                                <span>75</span>
+                            </span>
+                            <span class="title font-weight-bold text-center">Death</span>
+                        </div>
+                        <div class="col-md-6 col-10 align-center flex-column d-flex">
+                            <span class="display-4 font-weight-bold text-center">
+                                <span>15</span>
+                            </span>
+                            <span class="title font-weight-bold text-center">Death (Last 24H)</span>
+                        </div>
+                    </div>
+                    <div class="row" style="padding-bottom: 23px">
+                        <div class="col-md-6 col-10 align-center flex-column d-flex">
+                            <span class="display-4 font-weight-bold text-center">
+                                <span>18.37%</span>
+                            </span>
+                            <span class="title font-weight-bold text-center">Recovery Rate</span>
+                        </div>
+                        <div class="col-md-6 col-10 align-center flex-column d-flex">
+                            <span class="display-4 font-weight-bold text-center">
+                                <span>25.00%</span>
+                            </span>
+                            <span class="title font-weight-bold text-center">Death Rate</span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-body" style="padding: 10px;">
+                                    <canvas id="chBar"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 12px; margin-bottom: 12px;">
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-body" style="padding: 10px;">
+                                    <canvas id="chDonut"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- <div class="row">
+                <div class="col-md-8 col-12 py-1">
+                    <div class="card">
+                        <div class="card-body">
+                            <canvas id="chBar"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 py-1">
+                    <div class="card">
+                        <div class="card-body">
+                            <canvas id="chDonut"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+    </body>
+    <script>
+
+        /* bar chart */
+        var colors = ['#007bff','#28a745','#333333','#c3e6cb','#dc3545','#6c757d'];
+        var chBar = document.getElementById("chBar");
+        if (chBar) {
+            new Chart(chBar, {
+                type: 'bar',
+                data: {
+                    labels: ["Apr-11", "Apr-12", "Apr-13", "Apr-14", "Apr-15", "Apr-16", "Apr-17"],
+                    datasets: [{
+                        label: 'Infected',
+                        data: [482, 621, 803, 1012, 1231, 1572, 1838],
+                        backgroundColor: colors[0]
+                    },
+                    {
+                        label: 'Recovered',
+                        data: [36, 39, 42, 42, 49, 49, 58],
+                        backgroundColor: colors[1],
+                        // barPercentage: 0.5
+                    },
+                    {
+                        label: 'Death',
+                        data: [30, 34, 39, 46, 50, 60, 75],
+                        backgroundColor: colors[4]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Daily Covid-19 Statistics'
+                    },
+                    // hover: {
+                    //     mode: 'nearest',
+                    //     intersect: true
+                    // },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    legend: {
+                        display: true
+                    },
+                    scales: {
+                        xAxes: [{
+                            barPercentage: 0.85,
+                            categoryPercentage: 0.95,
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Date'
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Number of People'
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+
+        // donout chart
+        var chDonut = document.getElementById("chDonut");
+        if (chDonut) {
+            new Chart(chDonut, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [
+                            36574,
+                            66505
+                        ],
+                        backgroundColor: [
+                            colors[4],
+                            colors[1],
+                        ],
+                        // label: 'Dataset 1'
+                    }],
+                    labels: [
+                        'In Quarantine',
+                        'Released from Quarantine'
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Quarantine Percentage'
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    },
+                    tooltips: {
+                        callbacks: {
+                        label: function(tooltipItem, data) {
+                            var dataset = data.datasets[tooltipItem.datasetIndex];
+                            var meta = dataset._meta[Object.keys(dataset._meta)[0]];
+                            var total = meta.total;
+                            var currentValue = dataset.data[tooltipItem.index];
+                            var percentage = parseFloat((currentValue/total*100).toFixed(1));
+                            return currentValue + ' (' + percentage + '%)';
+                        },
+                        title: function(tooltipItem, data) {
+                            return data.labels[tooltipItem[0].index];
+                        }
+                        }
+                    }
+                }
+            })
+        }
+
+        // load infected data
+        var infected_data = 
+        fetch('https://us-central1-tran-dao.cloudfunctions.net/get_infected').then(res => res.json())
+        .then(data => infected_data = data.map(function (item) {
+            return {
+                type: 'Feature',
+                properties: {
+                        id: item.time._nanoseconds,
+                        quantity: item.quantity,
+                        time: item.time._seconds,
+                        name: item.name
+                    },
+                geometry: {
+                        type: 'Point',
+                        coordinates: [item.location._longitude, item.location._latitude, 0.0]
+                    }
+            }
+        }))
+        .then(data => console.log(data))
+
+        var infected_data2 =
+        fetch('https://services9.arcgis.com/qclw57aOgdtDP5l4/arcgis/rest/services/area_wise_dhaka_cases_lat_lon/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=number_of_cases%20desc&outSR=102100&resultOffset=0&resultRecordCount=500&resultType=standard&cacheHint=true%20Request%20Method:%20GET')
+        .then(res => res.json())
+        // .then(data => console.log(data))
+        .then(data => infected_data2 = data.features.map(function (item) {
+            return new Array(item.attributes.number_of_cases).fill({
+                    type: 'Feature',
+                    properties: {
+                            id: item.attributes.ObjectId,
+                            quantity: item.attributes.number_of_cases,
+                            name: item.attributes.area_in_dhaka_city
+                        },
+                    geometry: {
+                            type: 'Point',
+                            coordinates: [item.attributes.longitude, item.attributes.latitude]
+                        }
+            })
+        }))
+        .then(data => console.log(data))
+
+        var infected_data3 =
+        fetch('https://services9.arcgis.com/qclw57aOgdtDP5l4/arcgis/rest/services/district_wise_cases_lat_lon/FeatureServer/0/query?f=json&where=1=1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=cases%20desc&resultOffset=0&resultRecordCount=500&resultType=standard&cacheHint=true')
+        .then(res => res.json())
+        .then(data => data.features)
+        // .then(data => console.log(data))
+        .then(data => data.filter(function( obj ) {
+            return obj.attributes.district_city_eng !== 'Dhaka';
+        }))
+        .then(data => infected_data3 = data.map(function (item) {
+            return new Array(item.attributes.cases).fill({
+                    type: 'Feature',
+                    properties: {
+                            id: item.attributes.ObjectId,
+                            quantity: item.attributes.cases,
+                            name: item.attributes.district_city_eng
+                        },
+                    geometry: {
+                            type: 'Point',
+                            coordinates: [item.attributes.longitude, item.attributes.latitude]
+                        }
+            })
+        }))
+        .then(data => console.log(data))
+
+        // mapbox
+        mapboxgl.accessToken = 'pk.eyJ1IjoibnNhYmlyIiwiYSI6ImNrOHlraXhudTFqZ3QzZnByd3EwZW52cDAifQ.03QbR7mhWYstxhyX5OTgvg';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [90.403242, 23.742437 ],
+            zoom: 12
+            });
+        
+        setTimeout(() => {
+        map.on('load', function() {
+            // Add a new source from our GeoJSON data and
+            // set the 'cluster' option to true. GL-JS will
+            // add the point_count property to your source data.
+            map.addSource('earthquakes', {
+                type: 'geojson',
+                // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
+                // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
+                data:{
+                    'type': "FeatureCollection",
+                    'features': infected_data2.flat().concat(infected_data3.flat())
+                },
+                // data: 'http://covid19tracker.gov.bd/api/district',
+                // data: infected_data2,
+                cluster: true,
+                clusterMaxZoom: 14, // Max zoom to cluster points on
+                clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
+            });
+                
+            map.addLayer({
+                id: 'clusters',
+                type: 'circle',
+                source: 'earthquakes',
+                filter: ['has', 'point_count'],
+                paint: {
+                    // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+                    // with three steps to implement three types of circles:
+                    //   * Blue, 20px circles when point count is less than 100
+                    //   * Yellow, 30px circles when point count is between 100 and 750
+                    //   * Pink, 40px circles when point count is greater than or equal to 750
+                    'circle-color': [
+                        'step',
+                        ['get', 'point_count'],
+                        '#ff6e00',
+                        3,
+                        '#fc3f3f',
+                        9,
+                        '#ff2a00'
+                    ],
+                    'circle-radius': [
+                        'step',
+                        ['get', 'point_count'],
+                        12,
+                        5,
+                        20,
+                        15,
+                        30
+                    ]
+                }
+            });
+                
+            map.addLayer({
+                id: 'cluster-count',
+                type: 'symbol',
+                source: 'earthquakes',
+                filter: ['has', 'point_count'],
+                layout: {
+                    'text-field': '{point_count_abbreviated}',
+                    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                    'text-size': 14
+                }
+            });
+                
+            map.addLayer({
+                id: 'unclustered-point',
+                type: 'circle',
+                source: 'earthquakes',
+                filter: ['!', ['has', 'point_count']],
+                paint: {
+                    'circle-color': '#ffaa00',
+                    'circle-radius': 5,
+                    'circle-stroke-width': 1,
+                    'circle-stroke-color': '#fff'
+                }
+            });
+                
+            // inspect a cluster on click
+            map.on('click', 'clusters', function(e) {
+                var features = map.queryRenderedFeatures(e.point, {
+                    layers: ['clusters']
+                });
+                var clusterId = features[0].properties.cluster_id;
+                // console.log(map.getSource('earthquakes'))
+                map.getSource('earthquakes').getClusterExpansionZoom(
+                    clusterId,
+                    function(err, zoom) {
+                        if (err) return;
+                        
+                        map.easeTo({
+                            center: features[0].geometry.coordinates,
+                            zoom: zoom
+                        });
+                    }
+                );
+            });
+
+            // Create a popup, but don't add it to the map yet.
+            var popup = new mapboxgl.Popup({
+                closeButton: false,
+                closeOnClick: false,
+                anchor: 'bottom-left',
+                maxWidth: 'none'
+            });
+
+            // When a click event occurs on a feature in
+            // the unclustered-point layer, open a popup at
+            // the location of the feature, with
+            // description HTML from its properties.
+            map.on('mouseenter', 'unclustered-point', function(e) {
+
+                map.getCanvas().style.cursor = 'pointer';
+            
+                var coordinates = e.features[0].geometry.coordinates.slice();
+                var name = e.features[0].properties.name;
+                var infected = e.features[0].properties.quantity;
+                // Ensure that if the map is zoomed out such that
+                // multiple copies of the feature are visible, the
+                // popup appears over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+                
+                popup
+                .setLngLat(coordinates)
+                .setHTML(name + ' (' + infected + ')')
+                .addTo(map);
+            });
+
+            map.on('mouseleave', 'unclustered-point', function() {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+            });
+                
+            map.on('mouseenter', 'clusters', function() {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            map.on('mouseleave', 'clusters', function() {
+                map.getCanvas().style.cursor = '';
+            });
+        });
+    }, 300)
+
+    </script>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</html>
