@@ -1,0 +1,466 @@
+<html>
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+        <link href="../tabulator-4.6.2/css/bootstrap/tabulator_bootstrap4.min.css" rel="stylesheet">
+        <script type="text/javascript" src="../tabulator-4.6.2/js/tabulator.min.js"></script>
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="../bootstrap-4.4.1-dist/css/bootstrap.min.css">
+        <script src='../bootstrap-4.4.1-dist/js/bootstrap.js'></script>
+
+        <!-- <link rel="Chart" href="../chartjs-2.9.3-dist/Chart.min.css" >
+        <script src='../chartjs-2.9.3-dist/Chart.min.js'></script> -->
+
+        <link href='//fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+        <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script> -->
+
+        <script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
+        <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
+
+        <style type="text/css">
+            tabulator-footer {text-align: center}
+        </style>
+
+    </head>
+
+    <body>
+        <header class="navbar navbar-expand navbar-dark flex-md-row bg-info fixed-top">
+            <a class="navbar-brand" href="/sakib/index.html">covid19bd</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link active" href="/sakib/infected/infected.html">Infected Status <span class="sr-only">(current)</span></a>
+                    <a class="nav-item nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Relief Status</a>
+                </div>
+            </div>
+        </header>
+    </body>
+
+    <div class="container-fluid" style="padding-top: 56px;">
+        <div class="row">
+            <div class="col-md-7 col-11" style="height: 94.5%; padding: 0em; position: fixed;">
+                <div id='map' style='height: 100%; position: relative;' ></div>
+            </div>
+            <div class="col-md-5 col-7" style="background-color: moccasin; margin-left: 58.35%; padding: 0px;">
+                <div id='main-table' class="table-striped thead-light bg-active" style="margin-bottom: 30px;">
+                </div>
+                <div>
+                    <nav>
+                        <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                          <a class="nav-item nav-link active" id="first-graph" data-toggle="tab" href="#graph1" role="tab" aria-controls="graph1" aria-selected="true">Graph1</a>
+                          <a class="nav-item nav-link" id="second-graph" data-toggle="tab" href="#graph2" role="tab" aria-controls="graph2" aria-selected="false">Graph2</a>
+                          <a class="nav-item nav-link" id="third-graph" data-toggle="tab" href="#graph3" role="tab" aria-controls="graph3" aria-selected="false">Graph3</a>
+                        </div>
+                      </nav>
+                      <div class="tab-content" id="nav-tabContent">
+                        <div class="tab-pane fade show active" id="graph1" role="tabpanel" aria-labelledby="first-graph">
+                            <div id="Chart1" class="chart--container" style="width: 100%; height: 380px"></div>
+                        </div>
+                        <div class="tab-pane fade" id="graph2" role="tabpanel" aria-labelledby="second-graph">
+                            <div id="Chart2" class="chart--container" style="width: 100%; height: 380px"></div>
+                        </div>
+                        <div class="tab-pane fade" id="graph3" role="tabpanel" aria-labelledby="third-graph">
+                            <div id="Chart3" class="chart--container" style="width: 100%; height: 380px"></div>
+                        </div>
+                      </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // load relief data
+        var relief_data;
+        var map_relief_data;
+        fetch('https://us-central1-tran-dao.cloudfunctions.net/get_relief').then(res => res.json()).then(data => relief_data = data)
+        .then(data => map_relief_data = data.map(function (item) {
+            return {
+                type: 'Feature',
+                properties: {
+                        id: item.time._nanoseconds,
+                        quantity: item.quantity,
+                        time: item.time._seconds
+                    },
+                geometry: {
+                        type: 'Point',
+                        coordinates: [item.location._longitude, item.location._latitude, 0.0]
+                    }
+            }
+        }))
+        .then(data => console.log(data))
+        
+        function renderChart(chartId, titleText, xLabelText, yLabelText, xLabels, xValues, yValues) {
+            let chartConfig = {
+                type: 'area',
+                globals: {
+                    fontFamily: 'Roboto'
+                },
+                backgroundColor: '#fff',
+                utc: true,
+                title: {
+                    text: titleText,
+                    adjustLayout: true,
+                    backgroundColor: 'none',
+                    fontColor: '#05636c',
+                    fontSize: '24px',
+                    height: '25px',
+                    y: '15px'
+                },
+                plot: {
+                    tooltip: {
+                        text: '%v %t distributed on %data-days',
+                        padding: '10px',
+                        borderRadius: '5px',
+                        fontFamily: 'Roboto',
+                        fontSize: '15px',
+                        textAlign: 'left'
+                    },
+                    lineWidth: '2px',
+                    marker: {
+                        size: '1px',
+                        visible: false
+                    }
+                },
+                plotarea: {
+                    adjustLayout: true,
+                    marginTop: '10%',
+                    marginRight: 'dynamic',
+                    marginBottom: 'dynamic',
+                    marginLeft: 'dynamic'
+                },
+                scaleX: {
+                    guide: {
+                        lineWidth: '0px'
+                    },
+                    item: {
+                        fontColor: '#05636c',
+                        textAlign: 'center'
+                    },
+                    itemsOverlap: false,
+                    label: {
+                        text: xLabelText,
+                        fontSize: '14px',
+                        fontWeight: 'normal',
+                        offsetX: '10%'
+                    },
+                    // labels: ['Sept<br>19', 'Sept<br>20', 'Sept<br>21', 'Sept<br>22', 'Sept<br>23', 'Sept<br>24', 'Sept<br>25', 'Sept<br>26', 'Sept<br>27', 'Sept<br>28', 'Sept<br>29', 'Sept<br>30'],
+                    labels: xLabels,
+                    maxItems: 25,
+                    maxLabels: 25,
+                    // 'min-value':1420070400000, /* Unix timestamp for Jan 1, 2015. */
+                    // step: "day",
+                    // transform: { /* Converts your Unix timestamp to a human readable format. */
+                    //     type: "date", /* Set your transform type to "date". */
+                    //     all: "%M<br>%d" /* Specify your date/time format, using tokens. */
+                    // },
+                    tick: {
+                        lineWidth: '2px'
+                    },
+                    zooming: true
+                },
+                scaleY: {
+                    // values: '0:2500:500',
+                    guide: {
+                        alpha: 0.2,
+                        lineStyle: 'dashed',
+                        lineWidth: '0px'
+                    },
+                    item: {
+                        fontColor: '#05636c',
+                        fontWeight: 'normal'
+                    },
+                    label: {
+                        text: yLabelText,
+                        fontSize: '14px'
+                    }
+                },
+                crosshairX: {
+                    lineColor: '#898989',
+                    lineStyle: 'dashed',
+                    lineWidth: '1px',
+                    marker: {
+                        size: '4px',
+                        visible: false
+                    },
+                    plotLabel: {
+                        visible: false
+                    }
+                },
+                labels: [
+                    {
+                    text: 'Reliefs: %plot-0-value',
+                    bold: false,
+                    color: '#66c2a5',
+                    defaultValue: '',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    textAlign: 'left',
+                    width: '120px',
+                    x: '45%',
+                    y: '50px'
+                    }
+                ],
+                series: [
+                    {
+                    text: 'reliefs',
+                    values: yValues,
+                    alphaArea: '.3',
+                    aspect: 'spline',
+                    backgroundColor: '#66c2a5',
+                    dataDays: xValues,
+                    fontFamily: 'Roboto',
+                    fontSize: '14px',
+                    lineColor: '#66c2a5'
+                    }
+                ]
+            };
+
+            zingchart.render({
+                id: chartId,
+                data: chartConfig,
+                height: '100%',
+                width: '100%'
+            });
+        }
+
+        setTimeout(() => {
+            let time_sorted_relief_data = [...relief_data].map(function(item){
+                        return [item.time._seconds, item.quantity]
+                    }).sort(function(a, b){
+                        return a[0] - b[0]
+                    })
+
+            let xLabels1 = time_sorted_relief_data.map(function(item){
+                        const convertedDateArray = new Date(item[0]*1000).toDateString().split(" ");
+                        return convertedDateArray[1].concat("<br>").concat(convertedDateArray[2]);
+                    });
+                
+            let xValues1 = time_sorted_relief_data.map(function(item){
+                        const convertedDateArray = new Date(item[0]*1000).toDateString().split(" ");
+                        return convertedDateArray[1].concat(" ").concat(convertedDateArray[2]);
+                    });
+
+            let yValues1 = time_sorted_relief_data.map(a => a[1]);
+
+            renderChart('Chart1', 'Relief Quantity by Time', 'Distribution Date', 'Quantity', xLabels1, xValues1, yValues1)
+        }, 1000)
+
+        setTimeout(() => {
+            let quantity_sorted_relief_data = [...relief_data].map(function(item){
+                        return [item.location_details[1], item.quantity]
+                    }).sort(function(a, b){
+                        return b[1] - a[1]
+                    }).slice(0, 10).reverse()
+
+            let xLabels2 = quantity_sorted_relief_data.map(a => a[0]);
+
+            let yValues2 = quantity_sorted_relief_data.map(a => a[1]);
+
+            renderChart('Chart2', 'Top 10 Relief Distributed Area', 'Location', 'Quantity', xLabels2, xLabels2, yValues2)
+        }, 1000)
+
+        setTimeout(() => {
+            let package_type_relief_data = [...relief_data.reduce((hash, {quantity, package_type}) => {
+                        const curr = hash.get(package_type) || {package_type, qs: []};
+                        curr.qs.push(quantity);
+                        return hash.set(package_type, curr);
+                    }, new Map).values()].map(function(item){
+                        return [item.package_type, item.qs.reduce((a, b) => a + b, 0)]
+                    })
+
+            let xLabels3 = package_type_relief_data.map(a => a[0]);
+
+            let yValues3 = package_type_relief_data.map(a => a[1]);
+
+            renderChart('Chart3', 'Relief Distributed Quantity by Frequency', 'Distribution Period', 'Quantity', xLabels3, xLabels3, yValues3)
+        }, 1000)
+
+        setTimeout(() => {
+        table = new Tabulator('#main-table', {
+            height: 455,
+            // ajaxURL: "https://us-central1-tran-dao.cloudfunctions.net/get_relief",
+            data: relief_data.map(function(item){
+                return {
+                    name: item.name,
+                    time: new Date(item.time._seconds * 1000).toLocaleString(),
+                    quantity: item.quantity,
+                    location_details: item.location_details,
+                    package_type: item.package_type
+                }
+            }),
+            layout: "fitDataFill",
+            pagination: "local",
+            columns:[
+                {title:"Name", field:"name"},
+                {title:"Time", field: "time"},
+                {title:"Location", field:"location_details.1"},
+                {title:"Quantity", field:"quantity", sorter:"number"},
+                {title:"Package Type", field:"package_type"}
+            ]
+        });
+        }, 1000)
+
+        // table.setData("https://us-central1-tran-dao.cloudfunctions.net/get_relief");
+
+        // mapbox
+        mapboxgl.accessToken = 'pk.eyJ1IjoibnNhYmlyIiwiYSI6ImNrOHlraXhudTFqZ3QzZnByd3EwZW52cDAifQ.03QbR7mhWYstxhyX5OTgvg';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [90.403242, 23.742437 ],
+            zoom: 11
+            });
+
+        // Add zoom and rotation controls to the map.
+        map.addControl(new mapboxgl.NavigationControl());
+        
+        setTimeout(() => {
+            map.on('load', function() {
+                // Add a geojson point source.
+                // Heatmap layers also work with a vector tile source.
+                map.addSource('earthquakes', {
+                    'type': 'geojson',
+                    'data':{
+                        'type': "FeatureCollection",
+                        'features': map_relief_data
+                    }
+                });
+                
+                map.addLayer(
+                    {
+                        'id': 'earthquakes-heat',
+                        'type': 'heatmap',
+                        'source': 'earthquakes',
+                        'maxzoom': 24,
+                        'paint': {
+                            // Increase the heatmap weight based on frequency and property magnitude
+                            'heatmap-weight': [
+                                'interpolate',
+                                ['linear'],
+                                ['get', 'quantity'],
+                                0,
+                                0,
+                                6,
+                                1
+                            ],
+                            // Increase the heatmap color weight weight by zoom level
+                            // heatmap-intensity is a multiplier on top of heatmap-weight
+                            'heatmap-intensity': [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                0,
+                                1,
+                                9,
+                                3
+                            ],
+                            // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+                            // Begin color ramp at 0-stop with a 0-transparancy color
+                            // to create a blur-like effect.
+                            'heatmap-color': [
+                                'interpolate',
+                                ['linear'],
+                                ['heatmap-density'],
+                                0,
+                                'rgba(33,102,172,0)',
+                                0.2,
+                                'rgb(103,169,207)',
+                                0.4,
+                                'rgb(209,229,240)',
+                                0.6,
+                                'rgb(253,219,199)',
+                                0.8,
+                                'rgb(239,138,98)',
+                                1,
+                                'rgb(178,24,43)'
+                            ],
+                            // Adjust the heatmap radius by zoom level
+                            'heatmap-radius': [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                0,
+                                2,
+                                9,
+                                20
+                            ],
+                            // Transition from heatmap to circle layer by zoom level
+                            'heatmap-opacity': [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                9,
+                                1,
+                                12,
+                                0
+                            ]
+                        }
+                    },
+                    'waterway-label'
+                );
+                
+                map.addLayer(
+                    {
+                        'id': 'earthquakes-point',
+                        'type': 'circle',
+                        'source': 'earthquakes',
+                        'minzoom': 7,
+                        'paint': {
+                            // Size circle radius by earthquake magnitude and zoom level
+                            'circle-radius': [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                7,
+                                ['interpolate', ['linear'], ['get', 'quantity'], 0, 0, 3, 2],
+                                22,
+                                ['interpolate', ['linear'], ['get', 'quantity'], 0, 2, 3, 22]
+                            ],
+                            // Color circle by earthquake magnitude
+                            'circle-color': [
+                                'interpolate',
+                                ['linear'],
+                                ['get', 'quantity'],
+                                1,
+                                'rgba(33, 102, 172, 0)',
+                                2,
+                                'rgb(103,169,207)',
+                                3,
+                                'rgb(209,229,240)',
+                                5,
+                                'rgb(253,219,199)',
+                                100,
+                                'rgb(239,138,98)',
+                                6000,
+                                'rgb(178,24,43)'
+                            ],
+                            'circle-stroke-color': 'white',
+                            'circle-stroke-width': 1,
+                            // Transition from heatmap to circle layer by zoom level
+                            'circle-opacity': [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                2,
+                                0,
+                                3,
+                                1
+                            ]
+                        }
+                    },
+                    'waterway-label'
+                );
+            });
+        }, 1000)
+
+    </script>
+</html>
